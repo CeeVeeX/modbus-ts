@@ -26,7 +26,7 @@ async function main(): Promise<void> {
   const regs = await client.readHoldingRegisters(0, 4)
   console.log('read result:', regs)
 
-  await client.writeSingleRegister(10, 123)
+  await client.writeSingleRegister(0, Math.floor(Math.random() * 100))
   console.log('write single done')
 
   const unsubscribe = client.subscribe({

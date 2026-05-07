@@ -110,32 +110,39 @@ pnpm --filter @modbus-ts/node-tcp-example dev:advanced
 
 ## Browser Usage
 
-1. 启动 gateway：
+1. 在 `apps/browser-example` 下创建 `.env`（可由 `.env.example` 复制）：
 
-```ts
-import { ModbusGateway } from '@modbus-ts/gateway'
-
-const gateway = new ModbusGateway({
-  wsPort: 18080,
-  plcHost: '127.0.0.1',
-  plcPort: 502,
-})
-
-await gateway.start()
+```env
+GATEWAY_WS_PORT=18080
+PLC_HOST=127.0.0.1
+PLC_PORT=502
+VITE_MODBUS_WS_URL=ws://127.0.0.1:18080
 ```
 
-2. 启动浏览器 demo：
+2. 一键启动 gateway + 浏览器 demo：
 
 ```bash
 pnpm --filter @modbus-ts/browser-example dev
 ```
 
-3. 浏览器端通过 `WsTransport` 连接 `ws://127.0.0.1:18080`，并可在页面按钮中直接触发：
+3. 启动后会同时看到：
+
+- gateway：读取 `.env`，并连接 `PLC_HOST:PLC_PORT`
+- web：Vite 本地页面（默认 `http://localhost:5173`）
+
+4. 浏览器端通过 `WsTransport` 连接 `VITE_MODBUS_WS_URL`，并可在页面按钮中直接触发：
 
 - 重叠订阅合并
 - 重复订阅去重
 - read/write 优先级差异
 - polling 启停
+
+可选：若需要分开启动，可分别执行：
+
+```bash
+pnpm --filter @modbus-ts/browser-example dev:gateway
+pnpm --filter @modbus-ts/browser-example dev:web
+```
 
 ## Electron IPC Usage
 

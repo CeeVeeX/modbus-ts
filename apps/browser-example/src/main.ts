@@ -16,7 +16,8 @@ const log = (line: string) => {
   logNode.textContent += `${line}\n`
 }
 
-const transport = new WsTransport({ url: 'ws://127.0.0.1:18080' })
+const wsUrl = import.meta.env.VITE_MODBUS_WS_URL ?? 'ws://127.0.0.1:18080'
+const transport = new WsTransport({ url: wsUrl })
 const client = new ModbusClient({ transport, defaultUnitId: 1 })
 const advancedUnsubscribers: Array<() => void> = []
 
@@ -26,6 +27,7 @@ client.on('timeout', () => log('timeout'))
 client.on('error', (err) => log(`error: ${err?.message ?? 'unknown'}`))
 
 connectBtn.onclick = async () => {
+  log(`connecting to gateway: ${wsUrl}`)
   await client.connect()
 }
 

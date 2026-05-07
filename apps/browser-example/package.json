@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -k -n GATEWAY,WEB \"pnpm run dev:gateway\" \"pnpm run dev:web\"",
+    "dev:web": "vite",
+    "dev:gateway": "tsx src/gateway.ts",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run --passWithNoTests",
@@ -12,9 +14,13 @@
   },
   "dependencies": {
     "@modbus-ts/client": "workspace:*",
-    "@modbus-ts/transport-ws": "workspace:*"
+    "@modbus-ts/gateway": "workspace:*",
+    "@modbus-ts/transport-ws": "workspace:*",
+    "dotenv": "^17.2.3"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
+    "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "vite": "^7.1.7",
     "vitest": "^4.0.8"

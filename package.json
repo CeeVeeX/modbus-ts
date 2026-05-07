@@ -10,6 +10,9 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
+    "dev:node-tcp-example": "pnpm --filter @modbus-ts/node-tcp-example dev",
+    "dev:node-udp-example": "pnpm --filter @modbus-ts/node-udp-example dev",
+    "dev:browser-example": "pnpm --filter @modbus-ts/browser-example dev",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "test:coverage": "vitest run --coverage",
