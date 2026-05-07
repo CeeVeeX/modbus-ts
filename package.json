@@ -4,6 +4,17 @@
   "version": "0.1.0",
   "type": "module",
   "packageManager": "pnpm@10.33.1",
+  "description": "A TypeScript implementation of the Modbus protocol for Node.js and browsers.",
+  "author": "Cee Vee X <ceeveex@hotmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/ceeveex/modbus-ts#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ceeveex/modbus-ts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ceeveex/modbus-ts/issues"
+  },
   "engines": {
     "node": ">=20"
   },

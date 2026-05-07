@@ -2,6 +2,17 @@
   "name": "@modbus-ts/scheduler",
   "version": "0.1.0",
   "type": "module",
+  "description": "The scheduler package for modbus-ts.",
+  "author": "Cee Vee X <ceeveex@hotmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/ceeveex/modbus-ts#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ceeveex/modbus-ts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ceeveex/modbus-ts/issues"
+  },
   "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
