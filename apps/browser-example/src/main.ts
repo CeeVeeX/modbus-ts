@@ -5,10 +5,19 @@ const logNode = document.querySelector<HTMLPreElement>('#log')
 const connectBtn = document.querySelector<HTMLButtonElement>('#connect')
 const readBtn = document.querySelector<HTMLButtonElement>('#read')
 const writeBtn = document.querySelector<HTMLButtonElement>('#write')
+const writeValueInput = document.querySelector<HTMLInputElement>('#write-value')
 const startAdvancedBtn = document.querySelector<HTMLButtonElement>('#start-advanced')
 const stopAdvancedBtn = document.querySelector<HTMLButtonElement>('#stop-advanced')
 
-if (!logNode || !connectBtn || !readBtn || !writeBtn || !startAdvancedBtn || !stopAdvancedBtn) {
+if (
+  !logNode ||
+  !connectBtn ||
+  !readBtn ||
+  !writeBtn ||
+  !writeValueInput ||
+  !startAdvancedBtn ||
+  !stopAdvancedBtn
+) {
   throw new Error('missing dom nodes')
 }
 
@@ -37,8 +46,14 @@ readBtn.onclick = async () => {
 }
 
 writeBtn.onclick = async () => {
-  await client.writeSingleRegister(10, 123, { priority: 100 })
-  log('write: done (priority=100)')
+  const value = Number.parseInt(writeValueInput.value, 10)
+  if (Number.isNaN(value) || value < 0 || value > 65535) {
+    log('write: invalid value, expected 0-65535')
+    return
+  }
+
+  await client.writeSingleRegister(0, value, { priority: 100 })
+  log(`write: done register=0 value=${value} (priority=100)`)
 }
 
 startAdvancedBtn.onclick = () => {
