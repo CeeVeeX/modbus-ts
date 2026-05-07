@@ -52,7 +52,7 @@ function setupGatewayMocks() {
       cb()
     }
     setNoDelay(): void {}
-    write(_data: Buffer): void {}
+    write = vi.fn((_data: Buffer): void => {})
     destroy(): void {
       this.destroyed = true
       this.emit('close')
@@ -123,6 +123,7 @@ describe('gateway', () => {
     expect(ws.send).toHaveBeenCalled()
 
     ws.emit('message', Buffer.from([3, 4]))
+    expect(sockets[0].write).toHaveBeenCalledWith(Buffer.from([3, 4]))
     ws.emit('close')
     ws.emit('error')
 
@@ -132,7 +133,7 @@ describe('gateway', () => {
     expect(second.socket).toBe(first.socket)
   })
 
-  it('skips ws send when socket not open and handles arraybuffer message', async () => {
+  it('skips ws send when socket not open and handles arraybuffer/segments message', async () => {
     vi.resetModules()
     const { sockets } = setupGatewayMocks()
     const { ModbusGateway } = await import('../src/index')
@@ -154,5 +155,9 @@ describe('gateway', () => {
     expect(ws.send).not.toHaveBeenCalled()
 
     ws.emit('message', new Uint8Array([9, 8]).buffer)
+    expect(sockets[0].write).toHaveBeenCalledWith(Buffer.from([9, 8]))
+
+    ws.emit('message', [Buffer.from([1]), Buffer.from([2, 3])])
+    expect(sockets[0].write).toHaveBeenCalledWith(Buffer.from([1, 2, 3]))
   })
 })

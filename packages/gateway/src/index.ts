@@ -1,5 +1,5 @@
 import net from 'node:net'
-import { WebSocketServer, type WebSocket } from 'ws'
+import { WebSocketServer, type RawData, type WebSocket } from 'ws'
 
 interface PooledSocket {
   socket: net.Socket
@@ -62,6 +62,16 @@ export interface GatewayOptions {
   plcPort: number
 }
 
+function rawDataToBuffer(message: RawData): Buffer {
+  if (Buffer.isBuffer(message)) {
+    return message
+  }
+  if (message instanceof ArrayBuffer) {
+    return Buffer.from(message)
+  }
+  return Buffer.concat(message.map((part) => Buffer.from(part)))
+}
+
 export class ModbusGateway {
   private wss: WebSocketServer | null = null
   private pool = new TcpConnectionPool()
@@ -94,6 +104,18 @@ export class ModbusGateway {
   private async handleConnection(ws: WebSocket): Promise<void> {
     const entry = await this.pool.acquire(this.options.plcHost, this.options.plcPort)
     const { socket } = entry
+    let released = false
+
+    const releaseOnce = (): void => {
+      if (released) {
+        return
+      }
+      released = true
+      socket.off('data', onSocketData)
+      socket.off('error', onSocketError)
+      socket.off('close', onSocketClose)
+      this.pool.release(entry)
+    }
 
     const onSocketData = (chunk: Buffer) => {
       if (ws.readyState === ws.OPEN) {
@@ -101,20 +123,34 @@ export class ModbusGateway {
       }
     }
 
+    const onSocketError = (): void => {
+      releaseOnce()
+      if (ws.readyState === ws.OPEN || ws.readyState === ws.CONNECTING) {
+        ws.close(1011, 'tcp socket error')
+      }
+    }
+
+    const onSocketClose = (): void => {
+      releaseOnce()
+      if (ws.readyState === ws.OPEN || ws.readyState === ws.CONNECTING) {
+        ws.close(1011, 'tcp socket closed')
+      }
+    }
+
     socket.on('data', onSocketData)
-    ws.on('message', (message) => {
-      const data = message instanceof Buffer ? message : Buffer.from(message as ArrayBuffer)
-      socket.write(data)
+    socket.on('error', onSocketError)
+    socket.on('close', onSocketClose)
+
+    ws.on('message', (message: RawData) => {
+      socket.write(rawDataToBuffer(message))
     })
 
     ws.on('close', () => {
-      socket.off('data', onSocketData)
-      this.pool.release(entry)
+      releaseOnce()
     })
 
     ws.on('error', () => {
-      socket.off('data', onSocketData)
-      this.pool.release(entry)
+      releaseOnce()
     })
   }
 }
