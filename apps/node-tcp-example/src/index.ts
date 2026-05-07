@@ -1,10 +1,14 @@
+import 'dotenv/config'
 import { ModbusClient } from '@modbus-ts/client'
 import { TcpTransport } from '@modbus-ts/transport-tcp'
 
 async function main(): Promise<void> {
+  const host = process.env.MODBUS_HOST ?? '127.0.0.1'
+  const port = Number.parseInt(process.env.MODBUS_PORT ?? '502', 10)
+
   const transport = new TcpTransport({
-    host: '127.0.0.1',
-    port: 502,
+    host,
+    port: Number.isNaN(port) ? 502 : port,
   })
 
   const client = new ModbusClient({

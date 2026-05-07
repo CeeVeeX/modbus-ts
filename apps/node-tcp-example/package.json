@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@modbus-ts/client": "workspace:*",
-    "@modbus-ts/transport-tcp": "workspace:*"
+    "@modbus-ts/transport-tcp": "workspace:*",
+    "dotenv": "^17.4.2"
   },
   "devDependencies": {
     "@types/node": "^24.8.1",
