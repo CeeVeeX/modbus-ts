@@ -27,6 +27,7 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "test:coverage": "vitest run --coverage",
+    "coverage:open": "node scripts/open-coverage.mjs",
     "typecheck": "turbo run typecheck",
     "format": "prettier --write ."
   },
