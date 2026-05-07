@@ -1,0 +1,22 @@
+{
+  "name": "@modbus-ts/browser-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run --passWithNoTests",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@modbus-ts/client": "workspace:*",
+    "@modbus-ts/transport-ws": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "vite": "^7.1.7",
+    "vitest": "^4.0.8"
+  }
+}

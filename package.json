@@ -1,61 +1,40 @@
 {
-  "name": "pkg-placeholder",
+  "name": "modbus-tcp-runtime",
+  "private": true,
+  "version": "0.1.0",
   "type": "module",
-  "version": "0.0.0",
   "packageManager": "pnpm@10.33.1",
-  "description": "_description_",
-  "author": "Anthony Fu <anthonyfu117@hotmail.com>",
-  "license": "MIT",
-  "funding": "https://github.com/sponsors/antfu",
-  "homepage": "https://github.com/antfu/pkg-placeholder#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/antfu/pkg-placeholder.git"
+  "engines": {
+    "node": ">=20"
   },
-  "bugs": "https://github.com/antfu/pkg-placeholder/issues",
-  "keywords": [],
-  "sideEffects": false,
-  "exports": {
-    ".": "./dist/index.mjs",
-    "./package.json": "./package.json"
-  },
-  "types": "./dist/index.d.mts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
-    "build": "tsdown",
-    "dev": "tsdown --watch",
-    "lint": "eslint",
-    "prepublishOnly": "nr build",
-    "release": "bumpp",
-    "start": "tsx src/index.ts",
-    "test": "pnpm run build && vitest",
-    "typecheck": "tsc",
-    "prepare": "simple-git-hooks"
-  },
-  "devDependencies": {
-    "@antfu/eslint-config": "catalog:cli",
-    "@antfu/ni": "catalog:cli",
-    "@antfu/utils": "catalog:inlined",
-    "@types/node": "catalog:types",
-    "bumpp": "catalog:cli",
-    "eslint": "catalog:cli",
-    "lint-staged": "catalog:cli",
-    "publint": "catalog:cli",
-    "simple-git-hooks": "catalog:cli",
-    "tsdown": "catalog:cli",
-    "tsdown-stale-guard": "catalog:testing",
-    "tsnapi": "catalog:testing",
-    "tsx": "catalog:cli",
-    "typescript": "catalog:cli",
-    "vite": "catalog:cli",
-    "vitest": "catalog:testing"
-  },
-  "simple-git-hooks": {
-    "pre-commit": "pnpm i --frozen-lockfile --ignore-scripts --offline && pnpm run build && npx lint-staged"
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write ."
   },
   "lint-staged": {
-    "*": "eslint --fix"
+    "{apps,packages,src,test}/**/*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml}": [
+      "prettier --write"
+    ],
+    "{README.md,package.json,pnpm-workspace.yaml,tsconfig.json,tsconfig.base.json,turbo.json,.prettierrc.json}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^24.8.1",
+    "@vitest/coverage-v8": "^4.0.8",
+    "eslint": "^9.37.0",
+    "lint-staged": "^16.1.6",
+    "prettier": "^3.6.2",
+    "tsdown": "^0.21.10",
+    "tsdown-stale-guard": "^0.1.1",
+    "tsup": "^8.5.0",
+    "turbo": "^2.5.8",
+    "typescript": "^6.0.3",
+    "vitest": "^4.0.8"
   }
 }

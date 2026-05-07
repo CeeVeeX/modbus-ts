@@ -1,0 +1,33 @@
+{
+  "name": "@modbus-ts/transport-tcp",
+  "version": "0.1.0",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --target es2022 --dts --clean",
+    "dev": "tsup src/index.ts --format esm --target es2022 --dts --watch",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@modbus-ts/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.8.1",
+    "tsup": "^8.5.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.0.8"
+  }
+}

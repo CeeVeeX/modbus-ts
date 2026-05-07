@@ -1,9 +1,6 @@
-// @ts-check
-import antfu from '@antfu/eslint-config'
-
-export default antfu(
+/** @type {import('eslint').Linter.Config[]} */
+export default [
   {
-    type: 'lib',
-    pnpm: true,
+    ignores: ['**/dist/**', '**/coverage/**', '**/node_modules/**'],
   },
-)
+]

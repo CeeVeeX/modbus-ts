@@ -1,7 +1,14 @@
 .cache
 .DS_Store
 .idea
+.vscode/
+.turbo/
 *.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
 *.tgz
 coverage
 dist
@@ -9,3 +16,9 @@ lib-cov
 logs
 node_modules
 temp
+.eslintcache
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
