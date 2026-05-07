@@ -6,6 +6,7 @@
 
 - Modbus TCP (FC3 / FC4 / FC6 / FC16)
 - Node TCP transport
+- Electron IPC transport
 - Browser WebSocket transport
 - WebSocket -> TCP gateway (binary relay)
 - Read / Write / Subscription polling
@@ -28,6 +29,7 @@ packages/
   scheduler/       # 单连接串行 + 优先级 + timeout
   subscription/    # polling + merge + slice + dedupe + change detection
   transport-tcp/   # Node net transport + frame assembler + reconnect
+  transport-electron-ipc/ # Electron renderer <-> main IPC transport
   transport-udp/   # Node dgram transport（可配 RTU / ASCII）
   transport-ws/    # Browser WebSocket transport + reconnect
   client/          # 用户 API，组合 transport/protocol/scheduler/subscription
@@ -45,6 +47,7 @@ packages/
   ├─> @modbus-ts/subscription
   │     └─> @modbus-ts/utils
   ├─> @modbus-ts/transport-tcp
+  ├─> @modbus-ts/transport-electron-ipc
   └─> @modbus-ts/transport-ws
 
 @modbus-ts/client
@@ -132,6 +135,73 @@ pnpm --filter @modbus-ts/browser-example dev
 - read/write 优先级差异
 - polling 启停
 
+## Electron IPC Usage
+
+适用场景：Electron renderer 进程不能直连 PLC，需要通过主进程 TCP 转发。
+
+1. preload 暴露 IPC bridge（示例）：
+
+```ts
+import { contextBridge, ipcRenderer } from 'electron'
+
+contextBridge.exposeInMainWorld('modbusIpc', {
+  invoke: (channel: string, payload?: unknown) => ipcRenderer.invoke(channel, payload),
+  on: (channel: string, listener: (...args: unknown[]) => void) =>
+    ipcRenderer.on(channel, listener),
+  off: (channel: string, listener: (...args: unknown[]) => void) =>
+    ipcRenderer.off(channel, listener),
+})
+```
+
+2. main 进程处理 connect/send/close 并推送 data（示例骨架）：
+
+```ts
+import { ipcMain, BrowserWindow } from 'electron'
+
+ipcMain.handle('modbus:connect', async () => {
+  // connect tcp to plc
+})
+
+ipcMain.handle('modbus:send', async (_event, frame: Uint8Array) => {
+  // write frame to plc
+})
+
+ipcMain.handle('modbus:close', async () => {
+  // close plc connection
+})
+
+function emitDataToRenderer(win: BrowserWindow, frame: Uint8Array): void {
+  win.webContents.send('modbus:data', frame)
+}
+
+function emitClosedToRenderer(win: BrowserWindow, message: string): void {
+  win.webContents.send('modbus:closed', { message })
+}
+```
+
+3. renderer 使用 transport：
+
+```ts
+import { ModbusClient } from '@modbus-ts/client'
+import { ElectronIpcTransport } from '@modbus-ts/transport-electron-ipc'
+
+declare global {
+  interface Window {
+    modbusIpc: {
+      invoke(channel: string, payload?: unknown): Promise<unknown>
+      on(channel: string, listener: (...args: unknown[]) => void): void
+      off(channel: string, listener: (...args: unknown[]) => void): void
+    }
+  }
+}
+
+const transport = new ElectronIpcTransport({ ipc: window.modbusIpc })
+const client = new ModbusClient({ transport, defaultUnitId: 1 })
+
+await client.connect()
+const regs = await client.readHoldingRegisters(0, 4)
+```
+
 ## API Overview
 
 ```ts
@@ -156,6 +226,19 @@ const unsubscribe = client.subscribe({
 unsubscribe()
 await client.close()
 ```
+
+## Composition Examples
+
+更偏工程落地的多包组合示例见：
+
+- [COMPOSITION_EXAMPLES.md](COMPOSITION_EXAMPLES.md)
+
+包含以下链路：
+
+- Node TCP + Client + Subscription + Codec
+- Node UDP + RTU + Priority Scheduling
+- Browser + WsTransport + Gateway
+- Electron IPC + Renderer/Main Bridge
 
 ## Advanced Example（突出核心能力）
 
