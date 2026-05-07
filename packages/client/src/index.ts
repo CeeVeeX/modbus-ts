@@ -6,10 +6,11 @@ import {
   type Transport,
 } from '@modbus-ts/core'
 import {
-  decodeResponse,
-  encodeReadHoldingRegisters,
-  encodeWriteMultipleRegisters,
-  encodeWriteSingleRegister,
+  decodeResponseByMode,
+  encodeReadHoldingRegistersByMode,
+  encodeWriteMultipleRegistersByMode,
+  encodeWriteSingleRegisterByMode,
+  type ModbusWireMode,
 } from '@modbus-ts/protocol'
 import { PRIORITY, RequestScheduler } from '@modbus-ts/scheduler'
 import { SubscriptionEngine } from '@modbus-ts/subscription'
@@ -18,6 +19,7 @@ export interface ModbusClientOptions {
   transport: Transport
   defaultUnitId?: number
   defaultTimeout?: number
+  mode?: ModbusWireMode
 }
 
 export type ClientEvent = 'connect' | 'disconnect' | 'timeout' | 'error'
@@ -36,17 +38,23 @@ export class ModbusClient {
   private subscriptionEngine: SubscriptionEngine
   private sequence = 0
   private inFlight: InFlight | null = null
+  private mode: ModbusWireMode
 
   constructor(private readonly options: ModbusClientOptions) {
+    this.mode = options.mode ?? 'tcp'
+
     const transportAny = options.transport as Transport & {
       onConnect?: (cb: () => void) => void
     }
 
     options.transport.onData((data) => {
       try {
-        const response = decodeResponse(data)
-        if (this.inFlight && this.inFlight.tx === response.transactionId) {
-          this.inFlight.resolve(response)
+        const response = decodeResponseByMode(data, this.mode)
+        if (this.inFlight && (this.mode !== 'tcp' || this.inFlight.tx === response.transactionId)) {
+          this.inFlight.resolve({
+            ...response,
+            transactionId: this.inFlight.tx,
+          })
           this.inFlight = null
         }
       } catch (error) {
@@ -117,7 +125,8 @@ export class ModbusClient {
     const unitId = options?.unitId ?? this.options.defaultUnitId ?? 1
     const timeout = options?.timeout ?? this.options.defaultTimeout ?? 1000
 
-    const frame = encodeReadHoldingRegisters({
+    const frame = encodeReadHoldingRegistersByMode({
+      mode: this.mode,
       transactionId: tx,
       unitId,
       startAddress,
@@ -148,7 +157,8 @@ export class ModbusClient {
     const tx = this.nextTx()
     const unitId = options?.unitId ?? this.options.defaultUnitId ?? 1
     const timeout = options?.timeout ?? this.options.defaultTimeout ?? 1000
-    const frame = encodeWriteSingleRegister({
+    const frame = encodeWriteSingleRegisterByMode({
+      mode: this.mode,
       transactionId: tx,
       unitId,
       address,
@@ -177,7 +187,8 @@ export class ModbusClient {
     const tx = this.nextTx()
     const unitId = options?.unitId ?? this.options.defaultUnitId ?? 1
     const timeout = options?.timeout ?? this.options.defaultTimeout ?? 1000
-    const frame = encodeWriteMultipleRegisters({
+    const frame = encodeWriteMultipleRegistersByMode({
+      mode: this.mode,
       transactionId: tx,
       unitId,
       startAddress,

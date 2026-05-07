@@ -184,6 +184,52 @@ class NoResponseTransport implements Transport {
   }
 }
 
+class RtuTransport implements Transport {
+  private onDataCb: ((data: Uint8Array) => void) | null = null
+  async connect(): Promise<void> {}
+  async close(): Promise<void> {}
+  async send(_data: Uint8Array): Promise<void> {
+    const body = Uint8Array.from([0x01, 0x03, 0x04, 0x00, 0x2a, 0x00, 0x2b])
+    let crc = 0xffff
+    for (const byte of body) {
+      crc ^= byte
+      for (let i = 0; i < 8; i++) {
+        const lsb = crc & 1
+        crc >>= 1
+        if (lsb) {
+          crc ^= 0xa001
+        }
+      }
+    }
+    this.onDataCb?.(Uint8Array.from([...body, crc & 0xff, (crc >> 8) & 0xff]))
+  }
+  onData(cb: (data: Uint8Array) => void): void {
+    this.onDataCb = cb
+  }
+  onClose(_cb: (err?: Error) => void): void {}
+}
+
+class AsciiTransport implements Transport {
+  private onDataCb: ((data: Uint8Array) => void) | null = null
+  async connect(): Promise<void> {}
+  async close(): Promise<void> {}
+  async send(_data: Uint8Array): Promise<void> {
+    const body = [0x01, 0x03, 0x04, 0x00, 0x2a, 0x00, 0x2b]
+    let sum = 0
+    for (const b of body) {
+      sum = (sum + b) & 0xff
+    }
+    const lrc = (~sum + 1) & 0xff
+    const hex = [...body, lrc].map((v) => v.toString(16).padStart(2, '0').toUpperCase()).join('')
+    const text = `:${hex}\r\n`
+    this.onDataCb?.(Uint8Array.from([...text].map((c) => c.charCodeAt(0))))
+  }
+  onData(cb: (data: Uint8Array) => void): void {
+    this.onDataCb = cb
+  }
+  onClose(_cb: (err?: Error) => void): void {}
+}
+
 describe('client extra', () => {
   it('supports write single and write multiple', async () => {
     const transport = new RichMockTransport()
@@ -269,5 +315,25 @@ describe('client extra', () => {
 
     const client = new ModbusClient({ transport, defaultUnitId: 1 })
     await expect(client.connect()).resolves.toBeUndefined()
+  })
+
+  it('supports RTU mode requests', async () => {
+    const client = new ModbusClient({
+      transport: new RtuTransport(),
+      mode: 'rtu',
+      defaultUnitId: 1,
+    })
+    await client.connect()
+    await expect(client.readHoldingRegisters(0, 2)).resolves.toEqual([42, 43])
+  })
+
+  it('supports ASCII mode requests', async () => {
+    const client = new ModbusClient({
+      transport: new AsciiTransport(),
+      mode: 'ascii',
+      defaultUnitId: 1,
+    })
+    await client.connect()
+    await expect(client.readHoldingRegisters(0, 2)).resolves.toEqual([42, 43])
   })
 })

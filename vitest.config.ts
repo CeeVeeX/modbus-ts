@@ -9,6 +9,7 @@ export default defineConfig({
       '@modbus-ts/scheduler': resolve(__dirname, 'packages/scheduler/src/index.ts'),
       '@modbus-ts/subscription': resolve(__dirname, 'packages/subscription/src/index.ts'),
       '@modbus-ts/transport-tcp': resolve(__dirname, 'packages/transport-tcp/src/index.ts'),
+      '@modbus-ts/transport-udp': resolve(__dirname, 'packages/transport-udp/src/index.ts'),
       '@modbus-ts/transport-ws': resolve(__dirname, 'packages/transport-ws/src/index.ts'),
       '@modbus-ts/client': resolve(__dirname, 'packages/client/src/index.ts'),
       '@modbus-ts/gateway': resolve(__dirname, 'packages/gateway/src/index.ts'),
