@@ -1,6 +1,6 @@
 {
   "name": "@modbus-ts/transport-tcp",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "type": "module",
   "description": "The transport-tcp package for modbus-ts.",
   "author": "Cee Vee X <ceeveex@hotmail.com>",

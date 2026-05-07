@@ -1,6 +1,6 @@
 {
   "name": "@modbus-ts/electron-ipc-bridge",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "type": "module",
   "description": "The electron-ipc-bridge package for modbus-ts.",
   "author": "Cee Vee X <ceeveex@hotmail.com>",
