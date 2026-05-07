@@ -2,6 +2,26 @@
 
 工业级、可扩展、ESM First 的 Modbus Runtime，支持 Node TCP 与 Browser WebSocket Gateway。
 
+## Published Packages Overview
+
+scope: `@modbus-ts/*` ：
+
+- `@modbus-ts/core`: 平台无关核心类型、接口与错误定义。
+- `@modbus-ts/protocol`: Modbus TCP 协议编解码（FC3/FC4/FC6/FC16）。
+- `@modbus-ts/scheduler`: 单连接串行任务调度、优先级队列与超时控制。
+- `@modbus-ts/subscription`: 订阅轮询引擎，支持合并、裁切、去重与变更检测。
+- `@modbus-ts/transport-tcp`: Node TCP transport，支持 reconnect 与帧组装。
+- `@modbus-ts/transport-udp`: Node UDP transport，支持工业报文转发场景。
+- `@modbus-ts/transport-ws`: Browser WebSocket transport，支持 reconnect。
+- `@modbus-ts/electron-ipc-bridge`: Electron IPC bridge 适配层（renderer/main 通道桥接）。
+- `@modbus-ts/transport-electron-ipc`: 基于 Electron IPC 的 transport 实现。
+- `@modbus-ts/client`: 面向用户的统一 API（read/write/subscribe）。
+- `@modbus-ts/gateway`: WebSocket -> TCP 二进制转发网关与连接池。
+- `@modbus-ts/codec`: 工业数据编解码（uint/int/float，支持 word/byte swap）。
+- `@modbus-ts/utils`: 通用工具函数与辅助能力。
+
+概要：`@modbus-ts/client` 作为统一入口组合 protocol/scheduler/subscription/transport；`@modbus-ts/gateway` 负责浏览器到 PLC 的网络桥接；其余子包按职责拆分，可按需独立安装与组合。
+
 ## Features
 
 - Modbus TCP (FC3 / FC4 / FC6 / FC16)
