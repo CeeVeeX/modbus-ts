@@ -19,6 +19,7 @@
 ```text
 apps/
   node-tcp-example/
+  node-udp-example/
   browser-example/
 
 packages/
@@ -27,6 +28,7 @@ packages/
   scheduler/       # 单连接串行 + 优先级 + timeout
   subscription/    # polling + merge + slice + dedupe + change detection
   transport-tcp/   # Node net transport + frame assembler + reconnect
+  transport-udp/   # Node dgram transport（可配 RTU / ASCII）
   transport-ws/    # Browser WebSocket transport + reconnect
   client/          # 用户 API，组合 transport/protocol/scheduler/subscription
   gateway/         # ws <-> tcp binary relay + tcp connection pool
@@ -83,6 +85,24 @@ pnpm test:coverage
 pnpm --filter @modbus-ts/node-tcp-example dev
 ```
 
+### 5. Node UDP Example
+
+```bash
+pnpm --filter @modbus-ts/node-udp-example dev
+```
+
+UDP 高级能力演示：
+
+```bash
+pnpm --filter @modbus-ts/node-udp-example dev:advanced
+```
+
+### 6. Node Advanced Example（合并 / 去重 / 调度 / 订阅轮询）
+
+```bash
+pnpm --filter @modbus-ts/node-tcp-example dev:advanced
+```
+
 ## Browser Usage
 
 1. 启动 gateway：
@@ -105,7 +125,12 @@ await gateway.start()
 pnpm --filter @modbus-ts/browser-example dev
 ```
 
-3. 浏览器端通过 `WsTransport` 连接 `ws://127.0.0.1:18080`。
+3. 浏览器端通过 `WsTransport` 连接 `ws://127.0.0.1:18080`，并可在页面按钮中直接触发：
+
+- 重叠订阅合并
+- 重复订阅去重
+- read/write 优先级差异
+- polling 启停
 
 ## API Overview
 
@@ -131,6 +156,44 @@ const unsubscribe = client.subscribe({
 unsubscribe()
 await client.close()
 ```
+
+## Advanced Example（突出核心能力）
+
+代码位置：`apps/node-tcp-example/src/advanced.ts`
+
+该示例会同时演示：
+
+- 订阅轮询（500ms）
+- 自动报文合并（0-2 与 3-4 会合并为一次读取）
+- 重复订阅去重（两个 0-4 订阅只发一次底层请求）
+- 单连接调度与优先级（write > read > polling）
+
+运行：
+
+```bash
+pnpm --filter @modbus-ts/node-tcp-example dev:advanced
+```
+
+你会看到类似日志：
+
+```text
+[sub A 0-2] [...]
+[sub B 3-4] [...]
+[sub C 0-4] [...]
+[sub D 0-4 dup] [...]
+[manual read priority=read] [...]
+[manual write priority=write] done
+```
+
+说明：
+
+- A/B/C/D 的 callback 都会触发，但底层 polling 读请求会按 interval + 区间进行合并与去重。
+- 手动 write 使用更高优先级，会在同一连接串行队列中优先于 read/polling 执行。
+
+同类能力示例：
+
+- Browser: `apps/browser-example/src/main.ts`（按钮交互触发）
+- Node UDP: `apps/node-udp-example/src/advanced.ts`
 
 ## Subscription Merge Explain
 

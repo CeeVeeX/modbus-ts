@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx src/index.ts",
+    "dev:advanced": "tsx src/advanced.ts",
     "build": "tsup src/index.ts --format esm --target es2022 --dts --clean",
     "test": "vitest run --passWithNoTests",
     "lint": "eslint src --ext .ts",
