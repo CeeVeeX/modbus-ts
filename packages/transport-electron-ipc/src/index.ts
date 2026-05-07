@@ -1,11 +1,15 @@
 import { ConnectionClosedError, TransportError, type Transport } from '@modbus-ts/core'
-
-export interface ElectronIpcBridge {
-  invoke(channel: string, payload?: unknown): Promise<unknown>
-  on(channel: string, listener: (...args: unknown[]) => void): void
-  off?(channel: string, listener: (...args: unknown[]) => void): void
-  removeListener?(channel: string, listener: (...args: unknown[]) => void): void
-}
+import type { ElectronIpcBridge } from '@modbus-ts/electron-ipc-bridge'
+export {
+  createElectronMainBridge,
+  createElectronRendererBridge,
+  type ElectronIpcBridge,
+  type ElectronIpcMainLike,
+  type ElectronIpcRendererLike,
+  type ElectronMainBridge,
+  type ElectronMainBridgeOptions,
+  type MainBridgeChannels,
+} from '@modbus-ts/electron-ipc-bridge'
 
 export interface ElectronIpcTransportOptions {
   ipc: ElectronIpcBridge

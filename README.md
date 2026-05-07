@@ -29,6 +29,7 @@ packages/
   scheduler/       # 单连接串行 + 优先级 + timeout
   subscription/    # polling + merge + slice + dedupe + change detection
   transport-tcp/   # Node net transport + frame assembler + reconnect
+  electron-ipc-bridge/ # Electron IPC bridge adapters (renderer/main)
   transport-electron-ipc/ # Electron renderer <-> main IPC transport
   transport-udp/   # Node dgram transport（可配 RTU / ASCII）
   transport-ws/    # Browser WebSocket transport + reconnect
@@ -47,6 +48,7 @@ packages/
   ├─> @modbus-ts/subscription
   │     └─> @modbus-ts/utils
   ├─> @modbus-ts/transport-tcp
+  ├─> @modbus-ts/electron-ipc-bridge
   ├─> @modbus-ts/transport-electron-ipc
   └─> @modbus-ts/transport-ws
 

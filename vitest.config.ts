@@ -8,6 +8,10 @@ export default defineConfig({
       '@modbus-ts/protocol': resolve(__dirname, 'packages/protocol/src/index.ts'),
       '@modbus-ts/scheduler': resolve(__dirname, 'packages/scheduler/src/index.ts'),
       '@modbus-ts/subscription': resolve(__dirname, 'packages/subscription/src/index.ts'),
+      '@modbus-ts/electron-ipc-bridge': resolve(
+        __dirname,
+        'packages/electron-ipc-bridge/src/index.ts',
+      ),
       '@modbus-ts/transport-electron-ipc': resolve(
         __dirname,
         'packages/transport-electron-ipc/src/index.ts',

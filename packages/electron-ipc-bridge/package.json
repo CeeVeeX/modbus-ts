@@ -1,5 +1,5 @@
 {
-  "name": "@modbus-ts/transport-electron-ipc",
+  "name": "@modbus-ts/electron-ipc-bridge",
   "version": "0.1.0",
   "type": "module",
   "sideEffects": false,
@@ -22,10 +22,10 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@modbus-ts/core": "workspace:*",
-    "@modbus-ts/electron-ipc-bridge": "workspace:*"
+    "@modbus-ts/core": "workspace:*"
   },
   "devDependencies": {
+    "electron": "^35.7.5",
     "tsup": "^8.5.0",
     "typescript": "^6.0.3",
     "vitest": "^4.0.8"

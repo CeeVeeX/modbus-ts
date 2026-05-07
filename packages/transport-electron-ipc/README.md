@@ -33,6 +33,39 @@ await client.connect()
 console.log(await client.readHoldingRegisters(0, 4))
 ```
 
+## 桥封装示例
+
+```ts
+import {
+  createElectronMainBridge,
+  createElectronRendererBridge,
+} from '@modbus-ts/electron-ipc-bridge'
+import { ElectronIpcTransport } from '@modbus-ts/transport-electron-ipc'
+
+// preload / renderer bridge
+const rendererBridge = createElectronRendererBridge(window.modbusIpc)
+const transport = new ElectronIpcTransport({ ipc: rendererBridge })
+
+// main bridge
+const mainBridge = createElectronMainBridge({
+  ipcMain,
+  emitToRenderer: (channel, payload) => win.webContents.send(channel, payload),
+  onConnect: async () => {
+    // connect tcp
+  },
+  onSend: async (frame) => {
+    // write tcp frame
+  },
+  onClose: async () => {
+    // close tcp
+  },
+})
+
+// push data from tcp socket to renderer
+mainBridge.emitData(Uint8Array.from([0, 1]))
+mainBridge.emitClosed({ message: 'closed' })
+```
+
 ## 开发命令
 
 - pnpm --filter @modbus-ts/transport-electron-ipc build
