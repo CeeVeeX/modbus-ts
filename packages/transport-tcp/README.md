@@ -2,6 +2,12 @@
 
 Node.js TCP transport adapter for Modbus traffic.
 
+## Installation
+
+```bash
+pnpm add @modbus-ts/transport-tcp
+```
+
 ## Core Exports
 
 - TcpTransportOptions
@@ -30,12 +36,6 @@ await transport.close()
 - MBAP-based frame assembly from TCP stream
 - Automatic reconnect with exponential backoff
 - onConnect, onData, onClose callbacks
-
-## Dev
-
-```bash
-pnpm --filter @modbus-ts/transport-tcp test
-```
 
 ## Quick Links to Other Packages
 

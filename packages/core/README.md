@@ -2,6 +2,12 @@
 
 Core contracts and error types used across modbus-ts packages.
 
+## Installation
+
+```bash
+pnpm add @modbus-ts/core
+```
+
 ## Core Exports
 
 - ConnectionState
@@ -32,12 +38,6 @@ function assertConnected(transport: Transport): void {
 - Defines stable cross-package interfaces
 - Standardizes error naming and behavior
 - Keeps transport and protocol layers decoupled
-
-## Dev
-
-```bash
-pnpm --filter @modbus-ts/core test
-```
 
 ## Quick Links to Other Packages
 

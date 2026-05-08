@@ -2,6 +2,12 @@
 
 Modbus frame encoder/decoder for TCP, RTU, and ASCII.
 
+## Installation
+
+```bash
+pnpm add @modbus-ts/protocol
+```
+
 ## Core Exports
 
 - ModbusWireMode
@@ -49,12 +55,6 @@ const response = decodeResponseByMode(new Uint8Array([1, 3, 4, 0, 1, 0, 2, 42, 5
 | FC6           | Single Register    | Write      | writeSingleRegister    |
 | FC15          | Multiple Coils     | Write      | writeMultipleCoils     |
 | FC16          | Multiple Registers | Write      | writeMultipleRegisters |
-
-## Dev
-
-```bash
-pnpm --filter @modbus-ts/protocol test
-```
 
 ## Quick Links to Other Packages
 

@@ -2,6 +2,12 @@
 
 Node.js UDP transport adapter for Modbus traffic.
 
+## Installation
+
+```bash
+pnpm add @modbus-ts/transport-udp
+```
+
 ## Core Exports
 
 - UdpTransportOptions
@@ -29,12 +35,6 @@ await transport.close()
 - Datagram-based transport
 - Works well with RTU/ASCII payload frames
 - Emits received packets through onData
-
-## Dev
-
-```bash
-pnpm --filter @modbus-ts/transport-udp test
-```
 
 ## Quick Links to Other Packages
 

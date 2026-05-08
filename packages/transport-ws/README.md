@@ -2,6 +2,12 @@
 
 Browser WebSocket transport adapter for Modbus traffic.
 
+## Installation
+
+```bash
+pnpm add @modbus-ts/transport-ws
+```
+
 ## Core Exports
 
 - WsTransportOptions
@@ -27,12 +33,6 @@ await transport.send(new Uint8Array([0, 1, 0, 0, 0, 6, 1, 3, 0, 0, 0, 1]))
 - Buffers and reassembles MBAP-based frames
 - Automatic reconnect with exponential backoff
 - Designed for browser to gateway communication
-
-## Dev
-
-```bash
-pnpm --filter @modbus-ts/transport-ws test
-```
 
 ## Quick Links to Other Packages
 

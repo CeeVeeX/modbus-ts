@@ -2,6 +2,12 @@
 
 Electron IPC transport implementation for the modbus-ts Transport interface.
 
+## Installation
+
+```bash
+pnpm add @modbus-ts/transport-electron-ipc
+```
+
 ## Core Exports
 
 - ElectronIpcTransportOptions
@@ -25,12 +31,6 @@ await transport.connect()
 - Uses invoke channels for connect, send, close
 - Listens for data and closed events from main process
 - Emits Transport-compatible onData and onClose callbacks
-
-## Dev
-
-```bash
-pnpm --filter @modbus-ts/transport-electron-ipc test
-```
 
 ## Quick Links to Other Packages
 

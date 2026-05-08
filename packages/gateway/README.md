@@ -2,6 +2,12 @@
 
 WebSocket to TCP Modbus relay gateway for browser clients.
 
+## Installation
+
+```bash
+pnpm add @modbus-ts/gateway
+```
+
 ## Core Exports
 
 - GatewayOptions
@@ -26,12 +32,6 @@ await gateway.start()
 - Accepts browser WebSocket connections
 - Relays binary frames to PLC over TCP
 - Uses internal TCP connection pool for reuse
-
-## Dev
-
-```bash
-pnpm --filter @modbus-ts/gateway test
-```
 
 ## Quick Links to Other Packages
 

@@ -2,6 +2,12 @@
 
 High-level Modbus client API for read, write, and subscribe.
 
+## Installation
+
+```bash
+pnpm add @modbus-ts/client
+```
+
 ## Core Exports
 
 - ModbusClient
@@ -57,12 +63,6 @@ await client.close()
 - Use readDiscreteInputs for read-only digital input bits.
 - Use readHoldingRegisters for writable word registers.
 - Use readInputRegisters for read-only word registers.
-
-## Dev
-
-```bash
-pnpm --filter @modbus-ts/client test
-```
 
 ## Quick Links to Other Packages
 

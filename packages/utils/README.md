@@ -2,6 +2,12 @@
 
 Small utility helpers shared by modbus-ts packages.
 
+## Installation
+
+```bash
+pnpm add @modbus-ts/utils
+```
+
 ## Core Exports
 
 - sleep
@@ -25,12 +31,6 @@ const same = areArraysEqual([1, 2], [1, 2])
 
 - Deferred is useful for bridging callback events to async flows
 - areArraysEqual is used by subscription change detection
-
-## Dev
-
-```bash
-pnpm --filter @modbus-ts/utils test
-```
 
 ## Quick Links to Other Packages
 

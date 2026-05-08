@@ -2,6 +2,12 @@
 
 Serial request scheduler with priority and timeout control.
 
+## Installation
+
+```bash
+pnpm add @modbus-ts/scheduler
+```
+
 ## Core Exports
 
 - PRIORITY
@@ -30,12 +36,6 @@ const value = await scheduler.schedule({
 - Higher priority runs first
 - TimeoutError for expired tasks
 - clearPending and close to fail queued tasks
-
-## Dev
-
-```bash
-pnpm --filter @modbus-ts/scheduler test
-```
 
 ## Quick Links to Other Packages
 

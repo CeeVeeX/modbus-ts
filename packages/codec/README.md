@@ -2,6 +2,12 @@
 
 Industrial register codec helpers with byte and word swap support.
 
+## Installation
+
+```bash
+pnpm add @modbus-ts/codec
+```
+
 ## Core Exports
 
 - SwapOptions
@@ -23,12 +29,6 @@ const value = decodeFloat32(regs, { wordSwap: true })
 
 - Use byteSwap and wordSwap to match PLC memory layout
 - Helpers operate directly on Modbus register arrays
-
-## Dev
-
-```bash
-pnpm --filter @modbus-ts/codec test
-```
 
 ## Quick Links to Other Packages
 

@@ -2,6 +2,12 @@
 
 Typed Electron bridge helpers for main and renderer Modbus channels.
 
+## Installation
+
+```bash
+pnpm add @modbus-ts/electron-ipc-bridge
+```
+
 ## Core Exports
 
 - ElectronIpcBridge
@@ -24,12 +30,6 @@ await bridge.invoke('modbus:connect')
 - Standardizes connect, send, close channels
 - Converts payloads to Uint8Array safely
 - Supports custom channel names
-
-## Dev
-
-```bash
-pnpm --filter @modbus-ts/electron-ipc-bridge test
-```
 
 ## Quick Links to Other Packages
 

@@ -2,6 +2,12 @@
 
 Polling subscription engine with range merge and change detection.
 
+## Installation
+
+```bash
+pnpm add @modbus-ts/subscription
+```
+
 ## Core Exports
 
 - SubscriptionGroup
@@ -36,12 +42,6 @@ engine.stop()
 - Groups subscriptions by interval
 - Merges overlapping ranges per unitId
 - Calls callback only when values changed
-
-## Dev
-
-```bash
-pnpm --filter @modbus-ts/subscription test
-```
 
 ## Quick Links to Other Packages
 
