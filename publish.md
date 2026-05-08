@@ -34,3 +34,27 @@ pnpm -r --filter "./packages/*" publish --access public --no-git-checks
 1. pnpm 会按依赖拓扑递归发布，适合你的 workspace:* 互相依赖场景。  
 2. 建议发布前先提交一次版本变更；如果工作区是脏的，用 no-git-checks 才能发。  
 3. 你现在已经给各子包补了 description/author/license/homepage/repository/bugs，元信息层面已就绪。
+
+### npm 包弃用：
+
+常用命令：
+
+```bash
+# 弃用单个版本
+npm deprecate your-package@1.2.3 "有严重 bug，请升级到 1.2.4+"
+
+# 弃用一个版本范围
+npm deprecate "your-package@<1.2.4" "旧版本有问题，请升级到 >=1.2.4"
+```
+
+撤销弃用：
+
+```bash
+npm deprecate your-package@1.2.3 ""
+```
+
+要点：
+1. 弃用后，用户安装该版本会看到 warning，但仍可安装。  
+2. 真正“删除版本”是 `npm unpublish`，限制很多，不建议常规使用。  
+3. 你需要是该包的 owner/maintainer 才能执行。  
+
