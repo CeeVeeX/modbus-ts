@@ -1,6 +1,6 @@
 {
   "name": "@modbus-ts/codec",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "description": "The codec package for modbus-ts.",
   "author": "Cee Vee X <ceeveex@hotmail.com>",

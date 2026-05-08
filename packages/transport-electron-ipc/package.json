@@ -1,6 +1,6 @@
 {
   "name": "@modbus-ts/transport-electron-ipc",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "description": "The transport-electron-ipc package for modbus-ts.",
   "author": "Cee Vee X <ceeveex@hotmail.com>",
