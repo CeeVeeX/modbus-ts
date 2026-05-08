@@ -26,8 +26,23 @@ async function main(): Promise<void> {
   const regs = await client.readHoldingRegisters(0, 4)
   console.log('read result:', regs)
 
+  const inputRegs = await client.readInputRegisters(0, 4)
+  console.log('read input registers:', inputRegs)
+
+  const coils = await client.readCoils(0, 8)
+  console.log('read coils:', coils)
+
+  const discreteInputs = await client.readDiscreteInputs(0, 8)
+  console.log('read discrete inputs:', discreteInputs)
+
   await client.writeSingleRegister(0, Math.floor(Math.random() * 100))
   console.log('write single done')
+
+  await client.writeSingleCoil(1, true)
+  console.log('write single coil done')
+
+  await client.writeMultipleCoils(2, [true, false, true, true])
+  console.log('write multiple coils done')
 
   const unsubscribe = client.subscribe({
     start: 0,

@@ -7,8 +7,12 @@ import {
 } from '@modbus-ts/core'
 import {
   decodeResponseByMode,
+  encodeReadCoilsByMode,
+  encodeReadDiscreteInputsByMode,
   encodeReadHoldingRegistersByMode,
+  encodeWriteMultipleCoilsByMode,
   encodeWriteMultipleRegistersByMode,
+  encodeWriteSingleCoilByMode,
   encodeWriteSingleRegisterByMode,
   type ModbusWireMode,
 } from '@modbus-ts/protocol'
@@ -149,6 +153,93 @@ export class ModbusClient {
     return response.registers ?? []
   }
 
+  async readInputRegisters(
+    startAddress: number,
+    quantity: number,
+    options?: {
+      unitId?: number
+      timeout?: number
+      priority?: number
+    },
+  ): Promise<number[]> {
+    return this.readHoldingRegisters(startAddress, quantity, {
+      ...options,
+      functionCode: 4,
+    })
+  }
+
+  async readCoils(
+    startAddress: number,
+    quantity: number,
+    options?: {
+      unitId?: number
+      timeout?: number
+      priority?: number
+    },
+  ): Promise<boolean[]> {
+    const tx = this.nextTx()
+    const unitId = options?.unitId ?? this.options.defaultUnitId ?? 1
+    const timeout = options?.timeout ?? this.options.defaultTimeout ?? 1000
+
+    const frame = encodeReadCoilsByMode({
+      mode: this.mode,
+      transactionId: tx,
+      unitId,
+      startAddress,
+      quantity,
+    })
+
+    const response = await this.scheduleRequest({
+      id: tx,
+      priority: options?.priority ?? PRIORITY.read,
+      timeout,
+      execute: () => this.performRequest(tx, frame),
+      resolve: () => {},
+      reject: () => {},
+    })
+
+    if (!response.success) {
+      throw new ProtocolError(`modbus exception ${response.exceptionCode}`)
+    }
+    return (response.coils ?? []).slice(0, quantity)
+  }
+
+  async readDiscreteInputs(
+    startAddress: number,
+    quantity: number,
+    options?: {
+      unitId?: number
+      timeout?: number
+      priority?: number
+    },
+  ): Promise<boolean[]> {
+    const tx = this.nextTx()
+    const unitId = options?.unitId ?? this.options.defaultUnitId ?? 1
+    const timeout = options?.timeout ?? this.options.defaultTimeout ?? 1000
+
+    const frame = encodeReadDiscreteInputsByMode({
+      mode: this.mode,
+      transactionId: tx,
+      unitId,
+      startAddress,
+      quantity,
+    })
+
+    const response = await this.scheduleRequest({
+      id: tx,
+      priority: options?.priority ?? PRIORITY.read,
+      timeout,
+      execute: () => this.performRequest(tx, frame),
+      resolve: () => {},
+      reject: () => {},
+    })
+
+    if (!response.success) {
+      throw new ProtocolError(`modbus exception ${response.exceptionCode}`)
+    }
+    return (response.discreteInputs ?? []).slice(0, quantity)
+  }
+
   async writeSingleRegister(
     address: number,
     value: number,
@@ -179,6 +270,36 @@ export class ModbusClient {
     }
   }
 
+  async writeSingleCoil(
+    address: number,
+    value: boolean,
+    options?: { unitId?: number; timeout?: number; priority?: number },
+  ): Promise<void> {
+    const tx = this.nextTx()
+    const unitId = options?.unitId ?? this.options.defaultUnitId ?? 1
+    const timeout = options?.timeout ?? this.options.defaultTimeout ?? 1000
+    const frame = encodeWriteSingleCoilByMode({
+      mode: this.mode,
+      transactionId: tx,
+      unitId,
+      address,
+      value,
+    })
+
+    const response = await this.scheduleRequest({
+      id: tx,
+      priority: options?.priority ?? PRIORITY.write,
+      timeout,
+      execute: () => this.performRequest(tx, frame),
+      resolve: () => {},
+      reject: () => {},
+    })
+
+    if (!response.success) {
+      throw new ProtocolError(`modbus exception ${response.exceptionCode}`)
+    }
+  }
+
   async writeMultipleRegisters(
     startAddress: number,
     values: number[],
@@ -188,6 +309,36 @@ export class ModbusClient {
     const unitId = options?.unitId ?? this.options.defaultUnitId ?? 1
     const timeout = options?.timeout ?? this.options.defaultTimeout ?? 1000
     const frame = encodeWriteMultipleRegistersByMode({
+      mode: this.mode,
+      transactionId: tx,
+      unitId,
+      startAddress,
+      values,
+    })
+
+    const response = await this.scheduleRequest({
+      id: tx,
+      priority: options?.priority ?? PRIORITY.write,
+      timeout,
+      execute: () => this.performRequest(tx, frame),
+      resolve: () => {},
+      reject: () => {},
+    })
+
+    if (!response.success) {
+      throw new ProtocolError(`modbus exception ${response.exceptionCode}`)
+    }
+  }
+
+  async writeMultipleCoils(
+    startAddress: number,
+    values: boolean[],
+    options?: { unitId?: number; timeout?: number; priority?: number },
+  ): Promise<void> {
+    const tx = this.nextTx()
+    const unitId = options?.unitId ?? this.options.defaultUnitId ?? 1
+    const timeout = options?.timeout ?? this.options.defaultTimeout ?? 1000
+    const frame = encodeWriteMultipleCoilsByMode({
       mode: this.mode,
       transactionId: tx,
       unitId,

@@ -52,4 +52,14 @@ describe('client', () => {
 
     expect(values).toEqual([42, 43])
   })
+
+  it('reads input registers through FC4 wrapper', async () => {
+    const transport = new MockTransport()
+    const client = new ModbusClient({ transport })
+
+    await client.connect()
+    const values = await client.readInputRegisters(0, 2)
+
+    expect(values).toEqual([42, 43])
+  })
 })

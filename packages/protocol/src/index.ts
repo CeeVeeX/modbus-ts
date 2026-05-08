@@ -82,6 +82,29 @@ function decodePduFields(params: {
   }
 
   const payloadView = new DataView(payload.buffer, payload.byteOffset, payload.byteLength)
+  if (functionCode === 1 || functionCode === 2) {
+    const byteCount = payloadView.getUint8(0)
+    if (payload.length !== 1 + byteCount) {
+      throw new ProtocolError('invalid coil read response payload')
+    }
+
+    const bits: boolean[] = []
+    for (let i = 0; i < byteCount; i++) {
+      const byte = payloadView.getUint8(1 + i)
+      for (let bit = 0; bit < 8; bit++) {
+        bits.push(((byte >> bit) & 1) === 1)
+      }
+    }
+
+    return {
+      transactionId,
+      unitId,
+      functionCode,
+      success: true,
+      ...(functionCode === 1 ? { coils: bits } : { discreteInputs: bits }),
+    }
+  }
+
   if (functionCode === 3 || functionCode === 4) {
     const byteCount = payloadView.getUint8(0)
     if (payload.length !== 1 + byteCount || byteCount % 2 !== 0) {
@@ -100,6 +123,25 @@ function decodePduFields(params: {
     }
   }
 
+  if (functionCode === 5) {
+    if (payload.length !== 4) {
+      throw new ProtocolError('invalid write single coil response payload')
+    }
+    const rawValue = payloadView.getUint16(2)
+    if (rawValue !== 0x0000 && rawValue !== 0xff00) {
+      throw new ProtocolError('invalid write single coil response value')
+    }
+    return {
+      transactionId,
+      unitId,
+      functionCode,
+      success: true,
+      startAddress: payloadView.getUint16(0),
+      value: rawValue,
+      coilValue: rawValue === 0xff00,
+    }
+  }
+
   if (functionCode === 6) {
     if (payload.length !== 4) {
       throw new ProtocolError('invalid write single response payload')
@@ -114,7 +156,7 @@ function decodePduFields(params: {
     }
   }
 
-  if (functionCode === 16) {
+  if (functionCode === 15 || functionCode === 16) {
     if (payload.length !== 4) {
       throw new ProtocolError('invalid write multiple response payload')
     }
@@ -134,7 +176,7 @@ function decodePduFields(params: {
 function buildReadPdu(params: {
   startAddress: number
   quantity: number
-  functionCode?: 3 | 4
+  functionCode?: 1 | 2 | 3 | 4
 }): Uint8Array {
   const { startAddress, quantity, functionCode = 3 } = params
   ensureU16(startAddress, 'startAddress')
@@ -161,6 +203,18 @@ function buildWriteSinglePdu(params: { address: number; value: number }): Uint8A
   return pdu
 }
 
+function buildWriteSingleCoilPdu(params: { address: number; value: boolean }): Uint8Array {
+  const { address, value } = params
+  ensureU16(address, 'address')
+
+  const pdu = new Uint8Array(5)
+  const pduView = new DataView(pdu.buffer)
+  pduView.setUint8(0, 5)
+  pduView.setUint16(1, address)
+  pduView.setUint16(3, value ? 0xff00 : 0x0000)
+  return pdu
+}
+
 function buildWriteMultiplePdu(params: { startAddress: number; values: number[] }): Uint8Array {
   const { startAddress, values } = params
   ensureU16(startAddress, 'startAddress')
@@ -181,6 +235,103 @@ function buildWriteMultiplePdu(params: { startAddress: number; values: number[] 
   })
 
   return pdu
+}
+
+function buildWriteMultipleCoilsPdu(params: {
+  startAddress: number
+  values: boolean[]
+}): Uint8Array {
+  const { startAddress, values } = params
+  ensureU16(startAddress, 'startAddress')
+  if (values.length === 0 || values.length > 1968) {
+    throw new ProtocolError('coil values length must be 1..1968')
+  }
+
+  const byteCount = Math.ceil(values.length / 8)
+  const pdu = new Uint8Array(6 + byteCount)
+  const pduView = new DataView(pdu.buffer)
+  pduView.setUint8(0, 15)
+  pduView.setUint16(1, startAddress)
+  pduView.setUint16(3, values.length)
+  pduView.setUint8(5, byteCount)
+
+  for (let i = 0; i < values.length; i++) {
+    if (values[i]) {
+      const byteOffset = 6 + Math.floor(i / 8)
+      const bitOffset = i % 8
+      pdu[byteOffset] |= 1 << bitOffset
+    }
+  }
+
+  return pdu
+}
+
+export function encodeReadCoils(params: {
+  transactionId: number
+  unitId: number
+  startAddress: number
+  quantity: number
+}): Uint8Array {
+  const { transactionId, unitId, startAddress, quantity } = params
+  const mbap = buildMbap(transactionId, unitId, 5)
+  const pdu = buildReadPdu({ startAddress, quantity, functionCode: 1 })
+
+  const frame = new Uint8Array(mbap.length + pdu.length)
+  frame.set(mbap, 0)
+  frame.set(pdu, mbap.length)
+  return frame
+}
+
+export function encodeReadDiscreteInputs(params: {
+  transactionId: number
+  unitId: number
+  startAddress: number
+  quantity: number
+}): Uint8Array {
+  const { transactionId, unitId, startAddress, quantity } = params
+  const mbap = buildMbap(transactionId, unitId, 5)
+  const pdu = buildReadPdu({ startAddress, quantity, functionCode: 2 })
+
+  const frame = new Uint8Array(mbap.length + pdu.length)
+  frame.set(mbap, 0)
+  frame.set(pdu, mbap.length)
+  return frame
+}
+
+export function encodeReadCoilsRtu(params: {
+  unitId: number
+  startAddress: number
+  quantity: number
+}): Uint8Array {
+  const pdu = buildReadPdu({ ...params, functionCode: 1 })
+  return buildRtuAdu(params.unitId, pdu)
+}
+
+export function encodeReadDiscreteInputsRtu(params: {
+  unitId: number
+  startAddress: number
+  quantity: number
+}): Uint8Array {
+  const pdu = buildReadPdu({ ...params, functionCode: 2 })
+  return buildRtuAdu(params.unitId, pdu)
+}
+
+export function encodeReadCoilsAscii(params: {
+  unitId: number
+  startAddress: number
+  quantity: number
+}): Uint8Array {
+  const pdu = buildReadPdu({ ...params, functionCode: 1 })
+  return buildAsciiAdu(params.unitId, pdu)
+}
+
+export function encodeReadDiscreteInputsAscii(params: {
+  unitId: number
+  startAddress: number
+  quantity: number
+}): Uint8Array {
+  const pdu = buildReadPdu({ ...params, functionCode: 2 })
+  return buildAsciiAdu(params.unitId, pdu)
 }
 
 function buildRtuAdu(unitId: number, pdu: Uint8Array): Uint8Array {
@@ -258,6 +409,38 @@ export function encodeWriteSingleRegister(params: {
   return frame
 }
 
+export function encodeWriteSingleCoil(params: {
+  transactionId: number
+  unitId: number
+  address: number
+  value: boolean
+}): Uint8Array {
+  const { transactionId, unitId, address, value } = params
+  const mbap = buildMbap(transactionId, unitId, 5)
+  const pdu = buildWriteSingleCoilPdu({ address, value })
+
+  const frame = new Uint8Array(mbap.length + pdu.length)
+  frame.set(mbap, 0)
+  frame.set(pdu, mbap.length)
+  return frame
+}
+
+export function encodeWriteSingleCoilRtu(params: {
+  unitId: number
+  address: number
+  value: boolean
+}): Uint8Array {
+  return buildRtuAdu(params.unitId, buildWriteSingleCoilPdu(params))
+}
+
+export function encodeWriteSingleCoilAscii(params: {
+  unitId: number
+  address: number
+  value: boolean
+}): Uint8Array {
+  return buildAsciiAdu(params.unitId, buildWriteSingleCoilPdu(params))
+}
+
 export function encodeWriteSingleRegisterRtu(params: {
   unitId: number
   address: number
@@ -288,6 +471,38 @@ export function encodeWriteMultipleRegisters(params: {
   frame.set(mbap, 0)
   frame.set(pdu, mbap.length)
   return frame
+}
+
+export function encodeWriteMultipleCoils(params: {
+  transactionId: number
+  unitId: number
+  startAddress: number
+  values: boolean[]
+}): Uint8Array {
+  const { transactionId, unitId, startAddress, values } = params
+  const pdu = buildWriteMultipleCoilsPdu({ startAddress, values })
+
+  const mbap = buildMbap(transactionId, unitId, pdu.length)
+  const frame = new Uint8Array(mbap.length + pdu.length)
+  frame.set(mbap, 0)
+  frame.set(pdu, mbap.length)
+  return frame
+}
+
+export function encodeWriteMultipleCoilsRtu(params: {
+  unitId: number
+  startAddress: number
+  values: boolean[]
+}): Uint8Array {
+  return buildRtuAdu(params.unitId, buildWriteMultipleCoilsPdu(params))
+}
+
+export function encodeWriteMultipleCoilsAscii(params: {
+  unitId: number
+  startAddress: number
+  values: boolean[]
+}): Uint8Array {
+  return buildAsciiAdu(params.unitId, buildWriteMultipleCoilsPdu(params))
 }
 
 export function encodeWriteMultipleRegistersRtu(params: {
@@ -423,6 +638,38 @@ export function encodeReadHoldingRegistersByMode(params: {
   return encodeReadHoldingRegisters(params)
 }
 
+export function encodeReadCoilsByMode(params: {
+  mode: ModbusWireMode
+  transactionId: number
+  unitId: number
+  startAddress: number
+  quantity: number
+}): Uint8Array {
+  if (params.mode === 'rtu') {
+    return encodeReadCoilsRtu(params)
+  }
+  if (params.mode === 'ascii') {
+    return encodeReadCoilsAscii(params)
+  }
+  return encodeReadCoils(params)
+}
+
+export function encodeReadDiscreteInputsByMode(params: {
+  mode: ModbusWireMode
+  transactionId: number
+  unitId: number
+  startAddress: number
+  quantity: number
+}): Uint8Array {
+  if (params.mode === 'rtu') {
+    return encodeReadDiscreteInputsRtu(params)
+  }
+  if (params.mode === 'ascii') {
+    return encodeReadDiscreteInputsAscii(params)
+  }
+  return encodeReadDiscreteInputs(params)
+}
+
 export function encodeWriteSingleRegisterByMode(params: {
   mode: ModbusWireMode
   transactionId: number
@@ -439,6 +686,22 @@ export function encodeWriteSingleRegisterByMode(params: {
   return encodeWriteSingleRegister(params)
 }
 
+export function encodeWriteSingleCoilByMode(params: {
+  mode: ModbusWireMode
+  transactionId: number
+  unitId: number
+  address: number
+  value: boolean
+}): Uint8Array {
+  if (params.mode === 'rtu') {
+    return encodeWriteSingleCoilRtu(params)
+  }
+  if (params.mode === 'ascii') {
+    return encodeWriteSingleCoilAscii(params)
+  }
+  return encodeWriteSingleCoil(params)
+}
+
 export function encodeWriteMultipleRegistersByMode(params: {
   mode: ModbusWireMode
   transactionId: number
@@ -453,4 +716,20 @@ export function encodeWriteMultipleRegistersByMode(params: {
     return encodeWriteMultipleRegistersAscii(params)
   }
   return encodeWriteMultipleRegisters(params)
+}
+
+export function encodeWriteMultipleCoilsByMode(params: {
+  mode: ModbusWireMode
+  transactionId: number
+  unitId: number
+  startAddress: number
+  values: boolean[]
+}): Uint8Array {
+  if (params.mode === 'rtu') {
+    return encodeWriteMultipleCoilsRtu(params)
+  }
+  if (params.mode === 'ascii') {
+    return encodeWriteMultipleCoilsAscii(params)
+  }
+  return encodeWriteMultipleCoils(params)
 }

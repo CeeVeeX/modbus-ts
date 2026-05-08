@@ -62,6 +62,82 @@ class RichMockTransport implements Transport {
       return
     }
 
+    if (fc === 0x05) {
+      this.onDataCb?.(
+        Uint8Array.from([
+          (tx >> 8) & 0xff,
+          tx & 0xff,
+          0x00,
+          0x00,
+          0x00,
+          0x06,
+          0x01,
+          0x05,
+          data[8],
+          data[9],
+          data[10],
+          data[11],
+        ]),
+      )
+      return
+    }
+
+    if (fc === 0x0f) {
+      this.onDataCb?.(
+        Uint8Array.from([
+          (tx >> 8) & 0xff,
+          tx & 0xff,
+          0x00,
+          0x00,
+          0x00,
+          0x06,
+          0x01,
+          0x0f,
+          data[8],
+          data[9],
+          data[10],
+          data[11],
+        ]),
+      )
+      return
+    }
+
+    if (fc === 0x01) {
+      this.onDataCb?.(
+        Uint8Array.from([
+          (tx >> 8) & 0xff,
+          tx & 0xff,
+          0x00,
+          0x00,
+          0x00,
+          0x04,
+          0x01,
+          0x01,
+          0x01,
+          0x4d,
+        ]),
+      )
+      return
+    }
+
+    if (fc === 0x02) {
+      this.onDataCb?.(
+        Uint8Array.from([
+          (tx >> 8) & 0xff,
+          tx & 0xff,
+          0x00,
+          0x00,
+          0x00,
+          0x04,
+          0x01,
+          0x02,
+          0x01,
+          0x25,
+        ]),
+      )
+      return
+    }
+
     this.onDataCb?.(
       Uint8Array.from([
         (tx >> 8) & 0xff,
@@ -240,6 +316,42 @@ describe('client extra', () => {
     await expect(client.writeMultipleRegisters(1, [10, 20])).resolves.toBeUndefined()
   })
 
+  it('supports read coils and coil writes', async () => {
+    const transport = new RichMockTransport()
+    const client = new ModbusClient({ transport, defaultUnitId: 1 })
+
+    await client.connect()
+    await expect(client.readCoils(0, 8)).resolves.toEqual([
+      true,
+      false,
+      true,
+      true,
+      false,
+      false,
+      true,
+      false,
+    ])
+    await expect(client.writeSingleCoil(10, true)).resolves.toBeUndefined()
+    await expect(client.writeMultipleCoils(20, [true, false, true])).resolves.toBeUndefined()
+  })
+
+  it('supports read discrete inputs', async () => {
+    const transport = new RichMockTransport()
+    const client = new ModbusClient({ transport, defaultUnitId: 1 })
+
+    await client.connect()
+    await expect(client.readDiscreteInputs(0, 8)).resolves.toEqual([
+      true,
+      false,
+      true,
+      false,
+      false,
+      true,
+      false,
+      false,
+    ])
+  })
+
   it('emits disconnect on close event', async () => {
     const transport = new RichMockTransport()
     const client = new ModbusClient({ transport, defaultUnitId: 1 })
@@ -325,6 +437,14 @@ describe('client extra', () => {
     })
     await client.connect()
     await expect(client.readHoldingRegisters(0, 2)).resolves.toEqual([42, 43])
+  })
+
+  it('supports read input registers wrapper', async () => {
+    const transport = new RichMockTransport()
+    const client = new ModbusClient({ transport, defaultUnitId: 1 })
+
+    await client.connect()
+    await expect(client.readInputRegisters(0, 2)).resolves.toEqual([42, 43])
   })
 
   it('supports ASCII mode requests', async () => {

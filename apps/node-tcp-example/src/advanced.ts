@@ -55,6 +55,15 @@ async function main(): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 1200))
     const regs = await client.readHoldingRegisters(0, 5, { priority: 50 })
     console.log('[manual read priority=read]', regs)
+
+    const inputRegs = await client.readInputRegisters(0, 5, { priority: 50 })
+    console.log('[manual read input regs priority=read]', inputRegs)
+
+    const coils = await client.readCoils(0, 8, { priority: 50 })
+    console.log('[manual read coils priority=read]', coils)
+
+    const discreteInputs = await client.readDiscreteInputs(0, 8, { priority: 50 })
+    console.log('[manual read discrete inputs priority=read]', discreteInputs)
   })()
 
   // 写请求优先级更高(write=100)，用于观察调度抢占效果。
@@ -62,6 +71,12 @@ async function main(): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 1800))
     await client.writeSingleRegister(10, 123, { priority: 100 })
     console.log('[manual write priority=write] done')
+
+    await client.writeSingleCoil(11, true, { priority: 100 })
+    console.log('[manual write single coil priority=write] done')
+
+    await client.writeMultipleCoils(12, [true, false, true], { priority: 100 })
+    console.log('[manual write multi coils priority=write] done')
   })()
 
   setTimeout(async () => {

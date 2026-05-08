@@ -43,6 +43,15 @@ connectBtn.onclick = async () => {
 readBtn.onclick = async () => {
   const values = await client.readHoldingRegisters(0, 4, { priority: 50 })
   log(`read: ${JSON.stringify(values)}`)
+
+  const inputRegs = await client.readInputRegisters(0, 4, { priority: 50 })
+  log(`read input registers: ${JSON.stringify(inputRegs)}`)
+
+  const coils = await client.readCoils(0, 8, { priority: 50 })
+  log(`read coils: ${JSON.stringify(coils)}`)
+
+  const discreteInputs = await client.readDiscreteInputs(0, 8, { priority: 50 })
+  log(`read discrete inputs: ${JSON.stringify(discreteInputs)}`)
 }
 
 writeBtn.onclick = async () => {
@@ -54,6 +63,12 @@ writeBtn.onclick = async () => {
 
   await client.writeSingleRegister(0, value, { priority: 100 })
   log(`write: done register=0 value=${value} (priority=100)`)
+
+  await client.writeSingleCoil(1, true, { priority: 100 })
+  log('write: done single coil addr=1 value=true (priority=100)')
+
+  await client.writeMultipleCoils(2, [true, false, true], { priority: 100 })
+  log('write: done multiple coils start=2 values=[true,false,true] (priority=100)')
 }
 
 startAdvancedBtn.onclick = () => {

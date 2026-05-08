@@ -53,8 +53,23 @@ async function main(): Promise<void> {
   const regs = await client.readHoldingRegisters(0, 4)
   console.log('[udp-example] read result:', regs)
 
+  const inputRegs = await client.readInputRegisters(0, 4)
+  console.log('[udp-example] read input registers:', inputRegs)
+
+  const coils = await client.readCoils(0, 8)
+  console.log('[udp-example] read coils:', coils)
+
+  const discreteInputs = await client.readDiscreteInputs(0, 8)
+  console.log('[udp-example] read discrete inputs:', discreteInputs)
+
   await client.writeSingleRegister(10, 123)
   console.log('[udp-example] write single done')
+
+  await client.writeSingleCoil(11, true)
+  console.log('[udp-example] write single coil done')
+
+  await client.writeMultipleCoils(12, [true, false, true])
+  console.log('[udp-example] write multiple coils done')
 
   const unsubscribe = client.subscribe({
     start: 0,

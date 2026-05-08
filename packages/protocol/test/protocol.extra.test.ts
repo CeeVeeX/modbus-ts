@@ -4,11 +4,15 @@ import {
   decodeResponseByMode,
   decodeResponseRtu,
   decodeResponse,
+  encodeReadCoilsByMode,
+  encodeReadDiscreteInputsByMode,
   encodeReadHoldingRegistersAscii,
   encodeReadHoldingRegistersByMode,
   encodeReadHoldingRegistersRtu,
   encodeReadHoldingRegisters,
+  encodeWriteMultipleCoils,
   encodeWriteMultipleRegisters,
+  encodeWriteSingleCoilByMode,
 } from '../src/index'
 
 function crc16(data: Uint8Array): number {
@@ -57,6 +61,18 @@ describe('protocol extra', () => {
     expect(frame[7]).toBe(16)
   })
 
+  it('encodes FC15 write multiple coils', () => {
+    const frame = encodeWriteMultipleCoils({
+      transactionId: 7,
+      unitId: 1,
+      startAddress: 0,
+      values: [true, false, true, true, false, false, false, true, true],
+    })
+    expect(frame[7]).toBe(15)
+    expect(frame[13]).toBe(0x8d)
+    expect(frame[14]).toBe(0x01)
+  })
+
   it('throws for invalid u16 fields', () => {
     expect(() =>
       encodeReadHoldingRegisters({
@@ -75,6 +91,15 @@ describe('protocol extra', () => {
         values: [],
       }),
     ).toThrow('1..123')
+
+    expect(() =>
+      encodeWriteMultipleCoils({
+        transactionId: 1,
+        unitId: 1,
+        startAddress: 0,
+        values: [],
+      }),
+    ).toThrow('1..1968')
   })
 
   it('decodes exception response', () => {
@@ -135,5 +160,32 @@ describe('protocol extra', () => {
       'rtu',
     )
     expect(rtuRes.registers).toEqual([42])
+
+    const coilReq = encodeReadCoilsByMode({
+      mode: 'tcp',
+      transactionId: 2,
+      unitId: 1,
+      startAddress: 0,
+      quantity: 8,
+    })
+    expect(coilReq[7]).toBe(1)
+
+    const discreteReq = encodeReadDiscreteInputsByMode({
+      mode: 'tcp',
+      transactionId: 3,
+      unitId: 1,
+      startAddress: 0,
+      quantity: 8,
+    })
+    expect(discreteReq[7]).toBe(2)
+
+    const writeSingleCoilReq = encodeWriteSingleCoilByMode({
+      mode: 'ascii',
+      transactionId: 1,
+      unitId: 1,
+      address: 10,
+      value: true,
+    })
+    expect(String.fromCharCode(writeSingleCoilReq[0])).toBe(':')
   })
 })

@@ -22,6 +22,18 @@ const regs = await client.readHoldingRegisters(100, 2)
 const temperature = decodeFloat32(regs)
 console.log('temperature:', temperature)
 
+const inputRegs = await client.readInputRegisters(100, 2)
+console.log('input registers:', inputRegs)
+
+const coils = await client.readCoils(0, 8)
+console.log('coils:', coils)
+
+const discreteInputs = await client.readDiscreteInputs(0, 8)
+console.log('discrete inputs:', discreteInputs)
+
+await client.writeSingleCoil(10, true)
+await client.writeMultipleCoils(20, [true, false, true])
+
 const unsubscribe = client.subscribe({
   start: 100,
   length: 2,
@@ -55,9 +67,14 @@ await client.connect()
 
 // 读: priority=50
 void client.readHoldingRegisters(0, 5, { priority: 50 })
+void client.readInputRegisters(0, 5, { priority: 50 })
+void client.readCoils(0, 8, { priority: 50 })
+void client.readDiscreteInputs(0, 8, { priority: 50 })
 
 // 写: priority=100，优先级更高
 await client.writeSingleRegister(10, 123, { priority: 100 })
+await client.writeSingleCoil(11, true, { priority: 100 })
+await client.writeMultipleCoils(12, [true, false, true], { priority: 100 })
 
 await client.close()
 ```
@@ -94,6 +111,12 @@ const client = new ModbusClient({
 await client.connect()
 const regs = await client.readHoldingRegisters(0, 4)
 console.log('browser read:', regs)
+
+const coils = await client.readCoils(0, 8)
+console.log('browser coils:', coils)
+
+const discreteInputs = await client.readDiscreteInputs(0, 8)
+console.log('browser discrete inputs:', discreteInputs)
 ```
 
 ## 4) Electron Renderer + IPC Transport + Main TCP Bridge

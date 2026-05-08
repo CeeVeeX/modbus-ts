@@ -17,10 +17,12 @@ export interface Transport {
 export interface ModbusRequest {
   transactionId: number
   unitId: number
-  functionCode: 3 | 4 | 6 | 16
+  functionCode: 1 | 2 | 3 | 4 | 5 | 6 | 15 | 16
   startAddress: number
   quantity?: number
   values?: number[]
+  coilValue?: boolean
+  coilValues?: boolean[]
 }
 
 export interface ModbusResponse {
@@ -29,9 +31,12 @@ export interface ModbusResponse {
   functionCode: number
   success: boolean
   registers?: number[]
+  coils?: boolean[]
+  discreteInputs?: boolean[]
   startAddress?: number
   quantity?: number
   value?: number
+  coilValue?: boolean
   exceptionCode?: number
 }
 

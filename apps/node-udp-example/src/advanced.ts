@@ -74,12 +74,27 @@ async function main(): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 1200))
     const regs = await client.readHoldingRegisters(0, 5, { priority: 50 })
     console.log('[udp manual read priority=50]', regs)
+
+    const inputRegs = await client.readInputRegisters(0, 5, { priority: 50 })
+    console.log('[udp manual read input regs priority=50]', inputRegs)
+
+    const coils = await client.readCoils(0, 8, { priority: 50 })
+    console.log('[udp manual read coils priority=50]', coils)
+
+    const discreteInputs = await client.readDiscreteInputs(0, 8, { priority: 50 })
+    console.log('[udp manual read discrete inputs priority=50]', discreteInputs)
   })()
 
   void (async () => {
     await new Promise((resolve) => setTimeout(resolve, 1800))
     await client.writeSingleRegister(10, 123, { priority: 100 })
     console.log('[udp manual write priority=100] done')
+
+    await client.writeSingleCoil(11, true, { priority: 100 })
+    console.log('[udp manual write single coil priority=100] done')
+
+    await client.writeMultipleCoils(12, [true, false, true], { priority: 100 })
+    console.log('[udp manual write multi coils priority=100] done')
   })()
 
   setTimeout(async () => {
