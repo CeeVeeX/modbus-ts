@@ -1,5 +1,11 @@
 # modbus-ts
 
+<p align="center">
+<a href="https://www.npmjs.com/package/@modbus-ts/client" target="__blank"><img src="https://img.shields.io/npm/v/@modbus-ts/client?color=2B90B6&label=" alt="NPM version"></a>
+<a href="https://www.npmjs.com/package/@modbus-ts/client" target="__blank"><img alt="NPM Downloads" src="https://img.shields.io/npm/dm/@modbus-ts/client?color=349dbe&label="></a>
+<a href="https://github.com/ceeveex/modbus-ts/stargazers" target="__blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/ceeveex/modbus-ts?style=social"></a>
+</p>
+
 TypeScript Modbus runtime for Node.js, browsers, and Electron.
 
 modbus-ts is an ESM-first monorepo with composable packages for protocol encoding/decoding, transport adapters, scheduling, subscription polling, and a high-level client API.
