@@ -388,18 +388,17 @@ export class ModbusClient {
   }
 
   private async performRequest(tx: number, frame: Uint8Array): Promise<ModbusResponse> {
-    return new Promise<ModbusResponse>(async (resolve, reject) => {
+    return new Promise<ModbusResponse>((resolve, reject) => {
       this.inFlight = {
         tx,
         resolve,
         reject,
       }
-      try {
-        await this.options.transport.send(frame)
-      } catch (error) {
+
+      void this.options.transport.send(frame).catch((error) => {
         this.inFlight = null
         reject(error as Error)
-      }
+      })
     })
   }
 
