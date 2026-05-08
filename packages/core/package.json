@@ -1,6 +1,6 @@
 {
   "name": "@modbus-ts/core",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "description": "The core package for modbus-ts.",
   "author": "Cee Vee X <ceeveex@hotmail.com>",
