@@ -39,5 +39,18 @@
     "tsup": "^8.5.0",
     "typescript": "^6.0.3",
     "vitest": "^4.0.8"
-  }
+  },
+  "keywords": [
+    "modbus",
+    "modbus-ts",
+    "transport",
+    "websocket",
+    "browser",
+    "binary",
+    "reconnect",
+    "gateway",
+    "typescript",
+    "esm",
+    "industrial-iot"
+  ]
 }

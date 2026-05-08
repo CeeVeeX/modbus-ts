@@ -1,37 +1,33 @@
 # @modbus-ts/utils
 
-通用工具函数集合。
+Small utility helpers shared by modbus-ts packages.
 
-## 核心导出
+## Core Exports
 
 - sleep
 - Deferred
 - areArraysEqual
 
-## 最小示例
+## Minimal Example
 
 ```ts
-import { sleep, areArraysEqual } from '@modbus-ts/utils'
-
-await sleep(10)
-console.log(areArraysEqual([1, 2], [1, 2]))
-```
-
-## 组合示例
-
-```ts
-import { Deferred, areArraysEqual } from '@modbus-ts/utils'
+import { Deferred, areArraysEqual, sleep } from '@modbus-ts/utils'
 
 const gate = new Deferred<void>()
 setTimeout(() => gate.resolve(), 100)
 await gate.promise
 
-const changed = !areArraysEqual([1, 2], [1, 3])
-console.log('changed', changed)
+await sleep(50)
+const same = areArraysEqual([1, 2], [1, 2])
 ```
 
-## 开发命令
+## Usage Notes
 
-- pnpm --filter @modbus-ts/utils build
-- pnpm --filter @modbus-ts/utils test
-- pnpm --filter @modbus-ts/utils typecheck
+- Deferred is useful for bridging callback events to async flows
+- areArraysEqual is used by subscription change detection
+
+## Dev
+
+```bash
+pnpm --filter @modbus-ts/utils test
+```

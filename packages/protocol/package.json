@@ -39,5 +39,22 @@
     "tsup": "^8.5.0",
     "typescript": "^6.0.3",
     "vitest": "^4.0.8"
-  }
+  },
+  "keywords": [
+    "modbus",
+    "modbus-ts",
+    "protocol",
+    "modbus-tcp",
+    "modbus-rtu",
+    "modbus-ascii",
+    "fc3",
+    "fc4",
+    "fc6",
+    "fc16",
+    "encoding",
+    "decoding",
+    "crc16",
+    "lrc",
+    "typescript"
+  ]
 }

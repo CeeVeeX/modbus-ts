@@ -1,39 +1,35 @@
 # @modbus-ts/transport-ws
 
-Browser WebSocket Transport，支持自动重连与帧缓存。
+Browser WebSocket transport adapter for Modbus traffic.
 
-## 核心导出
+## Core Exports
 
 - WsTransportOptions
 - WsTransport
 
-## 最小示例
+## Minimal Example
 
 ```ts
 import { WsTransport } from '@modbus-ts/transport-ws'
 
-const transport = new WsTransport({ url: 'ws://127.0.0.1:18080' })
-transport.onData((frame) => console.log('frame', frame.length))
+const transport = new WsTransport({
+  url: 'ws://127.0.0.1:18080',
+  reconnectDelayMs: 300,
+  maxReconnectDelayMs: 5000,
+})
+
 await transport.connect()
+await transport.send(new Uint8Array([0, 1, 0, 0, 0, 6, 1, 3, 0, 0, 0, 1]))
 ```
 
-## 组合示例
+## Behavior
 
-```ts
-import { ModbusGateway } from '@modbus-ts/gateway'
-import { ModbusClient } from '@modbus-ts/client'
-import { WsTransport } from '@modbus-ts/transport-ws'
+- Buffers and reassembles MBAP-based frames
+- Automatic reconnect with exponential backoff
+- Designed for browser to gateway communication
 
-const gateway = new ModbusGateway({ wsPort: 18080, plcHost: '127.0.0.1', plcPort: 502 })
-await gateway.start()
+## Dev
 
-const client = new ModbusClient({ transport: new WsTransport({ url: 'ws://127.0.0.1:18080' }) })
-await client.connect()
-console.log(await client.readHoldingRegisters(0, 2))
+```bash
+pnpm --filter @modbus-ts/transport-ws test
 ```
-
-## 开发命令
-
-- pnpm --filter @modbus-ts/transport-ws build
-- pnpm --filter @modbus-ts/transport-ws test
-- pnpm --filter @modbus-ts/transport-ws typecheck

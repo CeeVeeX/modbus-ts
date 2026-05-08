@@ -1,15 +1,16 @@
 # @modbus-ts/electron-ipc-bridge
 
-Electron renderer/main 间 IPC 桥接封装，提供标准化桥创建与主进程 handler 注册。
+Typed Electron bridge helpers for main and renderer Modbus channels.
 
-## 核心导出
+## Core Exports
 
 - ElectronIpcBridge
+- ElectronMainBridgeOptions
+- ElectronMainBridge
 - createElectronRendererBridge
 - createElectronMainBridge
-- ElectronMainBridge
 
-## 最小示例
+## Minimal Example
 
 ```ts
 import { createElectronRendererBridge } from '@modbus-ts/electron-ipc-bridge'
@@ -18,30 +19,14 @@ const bridge = createElectronRendererBridge(window.modbusIpc)
 await bridge.invoke('modbus:connect')
 ```
 
-## 组合示例
+## Behavior
 
-```ts
-import { createElectronMainBridge } from '@modbus-ts/electron-ipc-bridge'
+- Standardizes connect, send, close channels
+- Converts payloads to Uint8Array safely
+- Supports custom channel names
 
-const bridge = createElectronMainBridge({
-  ipcMain,
-  webContents: win.webContents,
-  onConnect: async () => {
-    // connect tcp
-  },
-  onSend: async (frame) => {
-    // write tcp frame
-  },
-  onClose: async () => {
-    // close tcp
-  },
-})
+## Dev
 
-bridge.emitData(Uint8Array.from([0, 1]))
+```bash
+pnpm --filter @modbus-ts/electron-ipc-bridge test
 ```
-
-## 开发命令
-
-- pnpm --filter @modbus-ts/electron-ipc-bridge build
-- pnpm --filter @modbus-ts/electron-ipc-bridge test
-- pnpm --filter @modbus-ts/electron-ipc-bridge typecheck

@@ -1,39 +1,31 @@
 # @modbus-ts/codec
 
-工业寄存器数据编解码工具，支持 byte/word swap。
+Industrial register codec helpers with byte and word swap support.
 
-## 核心导出
+## Core Exports
 
 - SwapOptions
-- decodeUint16/int16/uint32/int32/float32/float64
-- encodeFloat32
-- encodeFloat64
+- decodeUint16 / decodeInt16
+- decodeUint32 / decodeInt32
+- decodeFloat32 / decodeFloat64
+- encodeFloat32 / encodeFloat64
 
-## 最小示例
+## Minimal Example
 
 ```ts
 import { decodeFloat32, encodeFloat32 } from '@modbus-ts/codec'
 
-const regs = encodeFloat32(12.5)
-const value = decodeFloat32(regs)
-console.log(value)
+const regs = encodeFloat32(12.5, { wordSwap: true })
+const value = decodeFloat32(regs, { wordSwap: true })
 ```
 
-## 组合示例
+## Notes
 
-```ts
-import { ModbusClient } from '@modbus-ts/client'
-import { TcpTransport } from '@modbus-ts/transport-tcp'
-import { decodeFloat32, encodeFloat32 } from '@modbus-ts/codec'
+- Use byteSwap and wordSwap to match PLC memory layout
+- Helpers operate directly on Modbus register arrays
 
-const client = new ModbusClient({ transport: new TcpTransport({ host: '127.0.0.1', port: 502 }) })
-await client.connect()
-await client.writeMultipleRegisters(120, encodeFloat32(22.5))
-console.log(decodeFloat32(await client.readHoldingRegisters(120, 2)))
+## Dev
+
+```bash
+pnpm --filter @modbus-ts/codec test
 ```
-
-## 开发命令
-
-- pnpm --filter @modbus-ts/codec build
-- pnpm --filter @modbus-ts/codec test
-- pnpm --filter @modbus-ts/codec typecheck

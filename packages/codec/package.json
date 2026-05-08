@@ -36,5 +36,19 @@
     "tsup": "^8.5.0",
     "typescript": "^6.0.3",
     "vitest": "^4.0.8"
-  }
+  },
+  "keywords": [
+    "modbus",
+    "modbus-ts",
+    "codec",
+    "registers",
+    "float32",
+    "float64",
+    "byte-swap",
+    "word-swap",
+    "endianness",
+    "industrial-data",
+    "typescript",
+    "esm"
+  ]
 }

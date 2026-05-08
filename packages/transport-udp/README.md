@@ -1,40 +1,37 @@
 # @modbus-ts/transport-udp
 
-Node.js UDP Transport，适配 Modbus UDP 通信场景。
+Node.js UDP transport adapter for Modbus traffic.
 
-## 核心导出
+## Core Exports
 
 - UdpTransportOptions
 - UdpTransport
 
-## 最小示例
+## Minimal Example
 
 ```ts
 import { UdpTransport } from '@modbus-ts/transport-udp'
 
-const transport = new UdpTransport({ host: '127.0.0.1', port: 502 })
-await transport.connect()
-await transport.send(Uint8Array.from([1, 3, 0, 0, 0, 1, 0, 0]))
-```
-
-## 组合示例
-
-```ts
-import { ModbusClient } from '@modbus-ts/client'
-import { UdpTransport } from '@modbus-ts/transport-udp'
-
-const client = new ModbusClient({
-  transport: new UdpTransport({ host: '127.0.0.1', port: 502 }),
-  mode: 'ascii',
-  defaultUnitId: 1,
+const transport = new UdpTransport({
+  host: '127.0.0.1',
+  port: 502,
+  bindAddress: '0.0.0.0',
+  bindPort: 0,
 })
 
-await client.connect()
-await client.writeSingleRegister(10, 123)
+await transport.connect()
+await transport.send(new Uint8Array([1, 3, 0, 0, 0, 2, 196, 11]))
+await transport.close()
 ```
 
-## 开发命令
+## Behavior
 
-- pnpm --filter @modbus-ts/transport-udp build
-- pnpm --filter @modbus-ts/transport-udp test
-- pnpm --filter @modbus-ts/transport-udp typecheck
+- Datagram-based transport
+- Works well with RTU/ASCII payload frames
+- Emits received packets through onData
+
+## Dev
+
+```bash
+pnpm --filter @modbus-ts/transport-udp test
+```

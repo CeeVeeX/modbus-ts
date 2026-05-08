@@ -36,5 +36,18 @@
     "tsup": "^8.5.0",
     "typescript": "^6.0.3",
     "vitest": "^4.0.8"
-  }
+  },
+  "keywords": [
+    "modbus",
+    "modbus-ts",
+    "utils",
+    "helpers",
+    "deferred",
+    "sleep",
+    "array-compare",
+    "async",
+    "typescript",
+    "esm",
+    "shared"
+  ]
 }

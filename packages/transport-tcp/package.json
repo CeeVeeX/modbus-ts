@@ -40,5 +40,18 @@
     "tsup": "^8.5.0",
     "typescript": "^6.0.3",
     "vitest": "^4.0.8"
-  }
+  },
+  "keywords": [
+    "modbus",
+    "modbus-ts",
+    "transport",
+    "tcp",
+    "socket",
+    "modbus-tcp",
+    "reconnect",
+    "frame-assembly",
+    "nodejs",
+    "typescript",
+    "esm"
+  ]
 }

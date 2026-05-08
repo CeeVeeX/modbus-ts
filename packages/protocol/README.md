@@ -1,51 +1,40 @@
 # @modbus-ts/protocol
 
-Modbus TCP/RTU/ASCII 编解码实现，输出统一为 Uint8Array。
+Modbus frame encoder/decoder for TCP, RTU, and ASCII.
 
-## 核心导出
+## Core Exports
 
 - ModbusWireMode
-- encodeReadHoldingRegisters\*
-- encodeWriteSingleRegister\*
-- encodeWriteMultipleRegisters\*
-- decodeResponse\*
-- decodeResponseByMode
+- encodeReadHoldingRegisters / encodeReadHoldingRegistersByMode
+- encodeWriteSingleRegister / encodeWriteSingleRegisterByMode
+- encodeWriteMultipleRegisters / encodeWriteMultipleRegistersByMode
+- decodeResponse / decodeResponseByMode
 
-## 最小示例
+## Minimal Example
 
 ```ts
-import { encodeReadHoldingRegistersByMode, decodeResponseByMode } from '@modbus-ts/protocol'
+import { decodeResponseByMode, encodeReadHoldingRegistersByMode } from '@modbus-ts/protocol'
 
-const req = encodeReadHoldingRegistersByMode({
-  mode: 'tcp',
+const request = encodeReadHoldingRegistersByMode({
+  mode: 'rtu',
   transactionId: 1,
   unitId: 1,
   startAddress: 0,
   quantity: 2,
 })
 
-const res = decodeResponseByMode(req, 'tcp')
+const response = decodeResponseByMode(new Uint8Array([1, 3, 4, 0, 1, 0, 2, 42, 57]), 'rtu')
 ```
 
-## 组合示例
+## Supported Function Codes
 
-```ts
-import { ModbusClient } from '@modbus-ts/client'
-import { UdpTransport } from '@modbus-ts/transport-udp'
+- FC3 Read Holding Registers
+- FC4 Read Input Registers
+- FC6 Write Single Register
+- FC16 Write Multiple Registers
 
-const client = new ModbusClient({
-  transport: new UdpTransport({ host: '127.0.0.1', port: 502 }),
-  mode: 'rtu',
-  defaultUnitId: 1,
-})
+## Dev
 
-await client.connect()
-const values = await client.readHoldingRegisters(0, 4)
-console.log(values)
+```bash
+pnpm --filter @modbus-ts/protocol test
 ```
-
-## 开发命令
-
-- pnpm --filter @modbus-ts/protocol build
-- pnpm --filter @modbus-ts/protocol test
-- pnpm --filter @modbus-ts/protocol typecheck

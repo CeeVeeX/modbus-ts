@@ -43,5 +43,22 @@
     "tsup": "^8.5.0",
     "typescript": "^6.0.3",
     "vitest": "^4.0.8"
-  }
+  },
+  "keywords": [
+    "modbus",
+    "modbus-ts",
+    "modbus-client",
+    "modbus-tcp",
+    "modbus-rtu",
+    "modbus-ascii",
+    "plc",
+    "industrial-iot",
+    "scada",
+    "typescript",
+    "esm",
+    "subscribe",
+    "polling",
+    "async-await",
+    "event-driven"
+  ]
 }

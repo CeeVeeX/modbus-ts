@@ -1,38 +1,38 @@
 # @modbus-ts/transport-tcp
 
-Node.js TCP Transport，包含帧组装与断线重连能力。
+Node.js TCP transport adapter for Modbus traffic.
 
-## 核心导出
+## Core Exports
 
 - TcpTransportOptions
 - TcpTransport
 
-## 最小示例
+## Minimal Example
 
 ```ts
 import { TcpTransport } from '@modbus-ts/transport-tcp'
 
-const transport = new TcpTransport({ host: '127.0.0.1', port: 502 })
-transport.onData((frame) => console.log('frame', frame.length))
+const transport = new TcpTransport({
+  host: '127.0.0.1',
+  port: 502,
+  connectTimeoutMs: 5000,
+  reconnectDelayMs: 300,
+  maxReconnectDelayMs: 5000,
+})
+
 await transport.connect()
-await transport.send(Uint8Array.from([0, 1, 0, 0, 0, 6, 1, 3, 0, 0, 0, 1]))
+await transport.send(new Uint8Array([0, 1, 0, 0, 0, 6, 1, 3, 0, 0, 0, 1]))
+await transport.close()
 ```
 
-## 组合示例
+## Behavior
 
-```ts
-import { ModbusClient } from '@modbus-ts/client'
-import { TcpTransport } from '@modbus-ts/transport-tcp'
-import { decodeFloat32 } from '@modbus-ts/codec'
+- MBAP-based frame assembly from TCP stream
+- Automatic reconnect with exponential backoff
+- onConnect, onData, onClose callbacks
 
-const client = new ModbusClient({ transport: new TcpTransport({ host: '127.0.0.1', port: 502 }) })
-await client.connect()
-const regs = await client.readHoldingRegisters(100, 2)
-console.log('decoded', decodeFloat32(regs))
+## Dev
+
+```bash
+pnpm --filter @modbus-ts/transport-tcp test
 ```
-
-## 开发命令
-
-- pnpm --filter @modbus-ts/transport-tcp build
-- pnpm --filter @modbus-ts/transport-tcp test
-- pnpm --filter @modbus-ts/transport-tcp typecheck

@@ -1,47 +1,44 @@
 # @modbus-ts/subscription
 
-订阅轮询引擎，支持区间合并、去重、裁切与变更检测。
+Polling subscription engine with range merge and change detection.
 
-## 核心导出
+## Core Exports
 
 - SubscriptionGroup
 - MergedRange
 - PollGroup
 - SubscriptionEngine
 
-## 最小示例
+## Minimal Example
 
 ```ts
 import { SubscriptionEngine } from '@modbus-ts/subscription'
 
 const engine = new SubscriptionEngine({
   readRegisters: async ({ start, length }) => new Array(length).fill(start),
-  onError: (err) => console.error(err),
+})
+
+const unsubscribe = engine.subscribe({
+  unitId: 1,
+  start: 0,
+  length: 4,
+  interval: 500,
+  callback: (registers) => console.log(registers),
 })
 
 engine.start()
+unsubscribe()
+engine.stop()
 ```
 
-## 组合示例
+## Behavior
 
-```ts
-import { ModbusClient } from '@modbus-ts/client'
-import { TcpTransport } from '@modbus-ts/transport-tcp'
+- Groups subscriptions by interval
+- Merges overlapping ranges per unitId
+- Calls callback only when values changed
 
-const client = new ModbusClient({ transport: new TcpTransport({ host: '127.0.0.1', port: 502 }) })
-await client.connect()
+## Dev
 
-const unsubscribeA = client.subscribe({ start: 0, length: 3, interval: 500, callback: console.log })
-const unsubscribeB = client.subscribe({ start: 3, length: 2, interval: 500, callback: console.log })
-
-setTimeout(() => {
-  unsubscribeA()
-  unsubscribeB()
-}, 5000)
+```bash
+pnpm --filter @modbus-ts/subscription test
 ```
-
-## 开发命令
-
-- pnpm --filter @modbus-ts/subscription build
-- pnpm --filter @modbus-ts/subscription test
-- pnpm --filter @modbus-ts/subscription typecheck
