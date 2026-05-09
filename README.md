@@ -2,6 +2,8 @@
 
 <p align="center">
 <a href="https://github.com/ceeveex/modbus-ts/stargazers" target="__blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/ceeveex/modbus-ts?style=social"></a>
+<a href="https://github.com/ceeveex/modbus-ts/issues" target="__blank"><img alt="GitHub issues" src="https://img.shields.io/github/issues/ceeveex/modbus-ts?style=social"></a>
+<a href="https://github.com/ceeveex/modbus-ts/blob/main/LICENSE.md" target="__blank"><img alt="License" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
 
 TypeScript Modbus runtime for Node.js, browsers, and Electron.
