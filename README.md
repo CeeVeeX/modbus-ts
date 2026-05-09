@@ -1,14 +1,28 @@
 # modbus-ts
 
 <p align="center">
-<a href="https://www.npmjs.com/package/@modbus-ts/client" target="__blank"><img src="https://img.shields.io/npm/v/@modbus-ts/client?color=2B90B6&label=" alt="NPM version"></a>
-<a href="https://www.npmjs.com/package/@modbus-ts/client" target="__blank"><img alt="NPM Downloads" src="https://img.shields.io/npm/dm/@modbus-ts/client?color=349dbe&label="></a>
 <a href="https://github.com/ceeveex/modbus-ts/stargazers" target="__blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/ceeveex/modbus-ts?style=social"></a>
 </p>
 
 TypeScript Modbus runtime for Node.js, browsers, and Electron.
 
 modbus-ts is an ESM-first monorepo with composable packages for protocol encoding/decoding, transport adapters, scheduling, subscription polling, and a high-level client API.
+
+## Packages
+
+- <a href="https://www.npmjs.com/package/@modbus-ts/client" target="__blank"><img alt="NPM Version" src="https://img.shields.io/npm/v/@modbus-ts/client?label=@modbus-ts/client"></a>: high-level Modbus client
+- <a href="https://www.npmjs.com/package/@modbus-ts/core" target="__blank"><img alt="NPM Version" src="https://img.shields.io/npm/v/@modbus-ts/core?label=@modbus-ts/core"></a>: shared contracts, types, and errors
+- <a href="https://www.npmjs.com/package/@modbus-ts/protocol" target="__blank"><img alt="NPM Version" src="https://img.shields.io/npm/v/@modbus-ts/protocol?label=@modbus-ts/protocol"></a>: FC1/FC2/FC3/FC4/FC5/FC6/FC15/FC16 frame encode/decode for TCP/RTU/ASCII
+- <a href="https://www.npmjs.com/package/@modbus-ts/scheduler" target="__blank"><img alt="NPM Version" src="https://img.shields.io/npm/v/@modbus-ts/scheduler?label=@modbus-ts/scheduler"></a>: serial request queue with priority
+- <a href="https://www.npmjs.com/package/@modbus-ts/subscription" target="__blank"><img alt="NPM Version" src="https://img.shields.io/npm/v/@modbus-ts/subscription?label=@modbus-ts/subscription"></a>: polling engine and range merge
+- <a href="https://www.npmjs.com/package/@modbus-ts/transport-tcp" target="__blank"><img alt="NPM Version" src="https://img.shields.io/npm/v/@modbus-ts/transport-tcp?label=@modbus-ts/transport-tcp"></a>: Node TCP transport with reconnect
+- <a href="https://www.npmjs.com/package/@modbus-ts/transport-udp" target="__blank"><img alt="NPM Version" src="https://img.shields.io/npm/v/@modbus-ts/transport-udp?label=@modbus-ts/transport-udp"></a>: Node UDP transport
+- <a href="https://www.npmjs.com/package/@modbus-ts/transport-ws" target="__blank"><img alt="NPM Version" src="https://img.shields.io/npm/v/@modbus-ts/transport-ws?label=@modbus-ts/transport-ws"></a>: browser WebSocket transport with reconnect
+- <a href="https://www.npmjs.com/package/@modbus-ts/electron-ipc-bridge" target="__blank"><img alt="NPM Version" src="https://img.shields.io/npm/v/@modbus-ts/electron-ipc-bridge?label=@modbus-ts/electron-ipc-bridge"></a>: typed Electron main/renderer bridge
+- <a href="https://www.npmjs.com/package/@modbus-ts/transport-electron-ipc" target="__blank"><img alt="NPM Version" src="https://img.shields.io/npm/v/@modbus-ts/transport-electron-ipc?label=@modbus-ts/transport-electron-ipc"></a>: Electron IPC transport adapter
+- <a href="https://www.npmjs.com/package/@modbus-ts/gateway" target="__blank"><img alt="NPM Version" src="https://img.shields.io/npm/v/@modbus-ts/gateway?label=@modbus-ts/gateway"></a>: WebSocket to TCP binary relay gateway
+- <a href="https://www.npmjs.com/package/@modbus-ts/codec" target="__blank"><img alt="NPM Version" src="https://img.shields.io/npm/v/@modbus-ts/codec?label=@modbus-ts/codec"></a>: register-value codec helpers
+- <a href="https://www.npmjs.com/package/@modbus-ts/utils" target="__blank"><img alt="NPM Version" src="https://img.shields.io/npm/v/@modbus-ts/utils?label=@modbus-ts/utils"></a>: shared async and comparison utilities
 
 ## Highlights
 
@@ -19,22 +33,6 @@ modbus-ts is an ESM-first monorepo with composable packages for protocol encodin
 - Subscription engine with range merge and change detection
 - Browser WebSocket gateway with TCP connection pooling
 - Industrial data codec with byte-swap and word-swap options
-
-## Packages
-
-- @modbus-ts/client: high-level Modbus client
-- @modbus-ts/core: shared contracts, types, and errors
-- @modbus-ts/protocol: FC1/FC2/FC3/FC4/FC5/FC6/FC15/FC16 frame encode/decode for TCP/RTU/ASCII
-- @modbus-ts/scheduler: serial request queue with priority
-- @modbus-ts/subscription: polling engine and range merge
-- @modbus-ts/transport-tcp: Node TCP transport with reconnect
-- @modbus-ts/transport-udp: Node UDP transport
-- @modbus-ts/transport-ws: browser WebSocket transport with reconnect
-- @modbus-ts/electron-ipc-bridge: typed Electron main/renderer bridge
-- @modbus-ts/transport-electron-ipc: Electron IPC transport adapter
-- @modbus-ts/gateway: WebSocket to TCP binary relay gateway
-- @modbus-ts/codec: register-value codec helpers
-- @modbus-ts/utils: shared async and comparison utilities
 
 ## Quick Start
 
