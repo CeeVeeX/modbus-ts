@@ -1,6 +1,14 @@
 import net from 'node:net'
 import { ConnectionClosedError, TransportError, type Transport } from '@modbus-ts/core'
 
+/**
+ * TCP 传输配置。
+ *
+ * @example
+ * ```ts
+ * const options: TcpTransportOptions = { host: '127.0.0.1', port: 502 }
+ * ```
+ */
 export interface TcpTransportOptions {
   host: string
   port: number
@@ -9,10 +17,41 @@ export interface TcpTransportOptions {
   maxReconnectDelayMs?: number
 }
 
+/**
+ * 接收数据回调类型。
+ * @example
+ * ```ts
+ * const onData: DataCallback = (data) => console.log(data.length)
+ * ```
+ */
 export type DataCallback = (data: Uint8Array) => void
+/**
+ * 连接关闭回调类型。
+ * @example
+ * ```ts
+ * const onClose: CloseCallback = (err) => console.log(err?.message)
+ * ```
+ */
 export type CloseCallback = (err?: Error) => void
+/**
+ * 连接建立回调类型。
+ * @example
+ * ```ts
+ * const onConnect: ConnectCallback = () => console.log('connected')
+ * ```
+ */
 export type ConnectCallback = () => void
 
+/**
+ * Modbus TCP 传输实现（Node.js）。
+ *
+ * @example
+ * ```ts
+ * const transport = new TcpTransport({ host: '127.0.0.1', port: 502 })
+ * await transport.connect()
+ * await transport.send(Uint8Array.from([0x00, 0x01]))
+ * ```
+ */
 export class TcpTransport implements Transport {
   private socket: net.Socket | null = null
   private dataCallbacks: DataCallback[] = []
@@ -134,6 +173,7 @@ export class TcpTransport implements Transport {
 
     while (this.receiveBuffer.length >= 7) {
       const pduLength = this.receiveBuffer.readUInt16BE(4)
+      // MBAP 长度字段表示 UnitId+PDU 的长度，因此完整帧长度是 6 + pduLength。
       const frameLength = 6 + pduLength
       if (this.receiveBuffer.length < frameLength) {
         return

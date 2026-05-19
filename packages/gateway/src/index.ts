@@ -13,6 +13,7 @@ class TcpConnectionPool {
   async acquire(host: string, port: number): Promise<PooledSocket> {
     const endpoint = `${host}:${port}`
     const candidates = this.pool.get(endpoint) ?? []
+    // 优先复用空闲连接，减少频繁建连的握手开销。
     const idle = candidates.find((entry) => !entry.busy && !entry.socket.destroyed)
     if (idle) {
       idle.busy = true
@@ -56,6 +57,14 @@ class TcpConnectionPool {
   }
 }
 
+/**
+ * 网关运行选项。
+ *
+ * @example
+ * ```ts
+ * const options: GatewayOptions = { wsPort: 18080, plcHost: '127.0.0.1', plcPort: 502 }
+ * ```
+ */
 export interface GatewayOptions {
   wsPort: number
   plcHost: string
@@ -63,6 +72,7 @@ export interface GatewayOptions {
 }
 
 function rawDataToBuffer(message: RawData): Buffer {
+  // ws 的 message 可能是 Buffer / ArrayBuffer / Buffer[]，统一归一化后再写 TCP。
   if (Buffer.isBuffer(message)) {
     return message
   }
@@ -72,6 +82,15 @@ function rawDataToBuffer(message: RawData): Buffer {
   return Buffer.concat(message.map((part) => Buffer.from(part)))
 }
 
+/**
+ * Modbus WebSocket 网关：把浏览器二进制帧转发到 PLC TCP。
+ *
+ * @example
+ * ```ts
+ * const gateway = new ModbusGateway({ wsPort: 18080, plcHost: '127.0.0.1', plcPort: 502 })
+ * await gateway.start()
+ * ```
+ */
 export class ModbusGateway {
   private wss: WebSocketServer | null = null
   private pool = new TcpConnectionPool()
@@ -107,6 +126,8 @@ export class ModbusGateway {
     let released = false
 
     const releaseOnce = (): void => {
+      // 同一个连接会收到 ws.close / ws.error / socket.close / socket.error 多路事件，
+      // 必须幂等释放，避免重复解绑和重复归还连接池。
       if (released) {
         return
       }
@@ -118,6 +139,7 @@ export class ModbusGateway {
     }
 
     const onSocketData = (chunk: Buffer) => {
+      // 仅在 ws 可写时转发，避免关闭态发送导致异常。
       if (ws.readyState === ws.OPEN) {
         ws.send(chunk)
       }
@@ -142,6 +164,7 @@ export class ModbusGateway {
     socket.on('close', onSocketClose)
 
     ws.on('message', (message: RawData) => {
+      // 浏览器侧一帧即 PLC 一帧，网关不改写 MBAP/PDU，只做透明转发。
       socket.write(rawDataToBuffer(message))
     })
 

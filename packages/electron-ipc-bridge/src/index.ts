@@ -1,6 +1,14 @@
 import { TransportError } from '@modbus-ts/core'
 import type { IpcMain, IpcRenderer, WebContents } from 'electron'
 
+/**
+ * 渲染进程侧桥接接口（面向 transport 层）。
+ *
+ * @example
+ * ```ts
+ * bridge.on('modbus:data', (_event, payload) => console.log(payload))
+ * ```
+ */
 export interface ElectronIpcBridge {
   invoke(channel: string, payload?: unknown): Promise<unknown>
   on(channel: string, listener: (...args: unknown[]) => void): void
@@ -8,11 +16,46 @@ export interface ElectronIpcBridge {
   removeListener?(channel: string, listener: (...args: unknown[]) => void): void
 }
 
+/**
+ * Electron `ipcRenderer` 的最小能力约束。
+ * @example
+ * ```ts
+ * const rendererLike: ElectronIpcRendererLike = ipcRenderer
+ * ```
+ */
 export type ElectronIpcRendererLike = Pick<IpcRenderer, 'invoke' | 'on' | 'off' | 'removeListener'>
 
+/**
+ * Electron `ipcMain` 的最小能力约束。
+ * @example
+ * ```ts
+ * const mainLike: ElectronIpcMainLike = ipcMain
+ * ```
+ */
 export type ElectronIpcMainLike = Pick<IpcMain, 'handle' | 'removeHandler'>
+/**
+ * Electron `webContents` 的最小能力约束。
+ * @example
+ * ```ts
+ * const wcLike: ElectronWebContentsLike = webContents
+ * ```
+ */
 export type ElectronWebContentsLike = Pick<WebContents, 'send'>
 
+/**
+ * 主进程与渲染进程通讯通道名。
+ *
+ * @example
+ * ```ts
+ * const channels: MainBridgeChannels = {
+ *   connectChannel: 'modbus:connect',
+ *   closeChannel: 'modbus:close',
+ *   sendChannel: 'modbus:send',
+ *   dataEventChannel: 'modbus:data',
+ *   closeEventChannel: 'modbus:closed',
+ * }
+ * ```
+ */
 export interface MainBridgeChannels {
   connectChannel: string
   closeChannel: string
@@ -21,6 +64,20 @@ export interface MainBridgeChannels {
   closeEventChannel: string
 }
 
+/**
+ * 主进程桥接初始化参数。
+ *
+ * @example
+ * ```ts
+ * const options: ElectronMainBridgeOptions = {
+ *   ipcMain,
+ *   webContents,
+ *   onConnect: async () => {},
+ *   onSend: async () => {},
+ *   onClose: async () => {},
+ * }
+ * ```
+ */
 export interface ElectronMainBridgeOptions {
   ipcMain: ElectronIpcMainLike
   webContents?: ElectronWebContentsLike
@@ -31,6 +88,14 @@ export interface ElectronMainBridgeOptions {
   channels?: Partial<MainBridgeChannels>
 }
 
+/**
+ * 主进程桥接对象，用于向渲染进程推送数据与关闭事件。
+ *
+ * @example
+ * ```ts
+ * mainBridge.emitData(Uint8Array.from([1, 2, 3]))
+ * ```
+ */
 export interface ElectronMainBridge {
   emitData(frame: Uint8Array): void
   emitClosed(payload?: unknown): void
@@ -74,6 +139,14 @@ function resolveEmitToRenderer(
   throw new TransportError('either emitToRenderer or webContents must be provided')
 }
 
+/**
+ * 创建渲染进程桥接对象。
+ *
+ * @example
+ * ```ts
+ * const bridge = createElectronRendererBridge(ipcRenderer)
+ * ```
+ */
 export function createElectronRendererBridge(ipc: ElectronIpcRendererLike): ElectronIpcBridge {
   return {
     invoke: (channel, payload) => ipc.invoke(channel, payload),
@@ -92,6 +165,14 @@ export function createElectronRendererBridge(ipc: ElectronIpcRendererLike): Elec
   }
 }
 
+/**
+ * 创建主进程桥接对象并注册 IPC handler。
+ *
+ * @example
+ * ```ts
+ * const bridge = createElectronMainBridge({ ipcMain, webContents, onConnect, onSend, onClose })
+ * ```
+ */
 export function createElectronMainBridge(options: ElectronMainBridgeOptions): ElectronMainBridge {
   const channels = resolveChannels(options.channels)
   const emitToRenderer = resolveEmitToRenderer(options)

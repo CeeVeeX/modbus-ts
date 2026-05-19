@@ -1,16 +1,43 @@
 import type { Subscription } from '@modbus-ts/core'
 import { areArraysEqual, sleep } from '@modbus-ts/utils'
 
+/**
+ * 带上次数据快照的订阅对象。
+ *
+ * @example
+ * ```ts
+ * const group: SubscriptionGroup = {
+ *   id: 'sub-1', unitId: 1, start: 0, length: 2, interval: 500,
+ *   callback: () => {}, lastData: [1, 2],
+ * }
+ * ```
+ */
 export interface SubscriptionGroup extends Subscription {
   lastData?: number[]
 }
 
+/**
+ * 合并后的读取区间。
+ *
+ * @example
+ * ```ts
+ * const range: MergedRange = { unitId: 1, start: 0, length: 10 }
+ * ```
+ */
 export interface MergedRange {
   unitId: number
   start: number
   length: number
 }
 
+/**
+ * 同一轮询周期的分组信息。
+ *
+ * @example
+ * ```ts
+ * const g: PollGroup = { interval: 500, subscriptions: new Map(), mergedRanges: [], running: false }
+ * ```
+ */
 export interface PollGroup {
   interval: number
   subscriptions: Map<string, SubscriptionGroup>
@@ -18,6 +45,16 @@ export interface PollGroup {
   running: boolean
 }
 
+/**
+ * 订阅引擎依赖项。
+ *
+ * @example
+ * ```ts
+ * const options: SubscriptionEngineOptions = {
+ *   readRegisters: async ({ unitId, start, length }) => [unitId, start, length],
+ * }
+ * ```
+ */
 export interface SubscriptionEngineOptions {
   readRegisters: (params: { unitId: number; start: number; length: number }) => Promise<number[]>
   onError?: (error: Error) => void
@@ -27,6 +64,22 @@ function makeRangeKey(unitId: number, start: number, length: number): string {
   return `${unitId}:${start}:${length}`
 }
 
+/**
+ * 订阅轮询引擎。
+ *
+ * - 同 interval 自动分组
+ * - 同 unitId 的重叠地址自动合并
+ * - 仅在数据变化时触发回调
+ *
+ * @example
+ * ```ts
+ * const engine = new SubscriptionEngine({ readRegisters: async () => [1, 2, 3] })
+ * const unsub = engine.subscribe({ unitId: 1, start: 0, length: 2, interval: 500, callback: console.log })
+ * engine.start()
+ * unsub()
+ * engine.stop()
+ * ```
+ */
 export class SubscriptionEngine {
   private groups = new Map<number, PollGroup>()
   private running = false
@@ -126,6 +179,7 @@ export class SubscriptionEngine {
 
       const prevEnd = prev.start + prev.length
       const currentEnd = range.start + range.length
+      // 若新区间和上一区间重叠（或紧邻），合并成一个连续读取区间以减少请求次数。
       if (range.start <= prevEnd) {
         prev.length = Math.max(prevEnd, currentEnd) - prev.start
       } else {
@@ -143,6 +197,7 @@ export class SubscriptionEngine {
   private async runPollLoop(group: PollGroup): Promise<void> {
     let nextTickAt = Date.now()
     while (this.running && group.running) {
+      // 固定周期调度：用理论下次时间减当前时间，避免误差累计漂移。
       nextTickAt += group.interval
       try {
         await this.pollGroup(group)
@@ -179,6 +234,7 @@ export class SubscriptionEngine {
 
         const offset = sub.start - range.start
         const chunk = values.slice(offset, offset + sub.length)
+        // 只在数据发生变化时触发回调，避免高频重复通知。
         if (!sub.lastData || !areArraysEqual(sub.lastData, chunk)) {
           sub.lastData = [...chunk]
           sub.callback(chunk)

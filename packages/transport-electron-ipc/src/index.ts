@@ -11,6 +11,14 @@ export {
   type MainBridgeChannels,
 } from '@modbus-ts/electron-ipc-bridge'
 
+/**
+ * Electron IPC 传输配置。
+ *
+ * @example
+ * ```ts
+ * const options: ElectronIpcTransportOptions = { ipc: bridge }
+ * ```
+ */
 export interface ElectronIpcTransportOptions {
   ipc: ElectronIpcBridge
   connectChannel?: string
@@ -20,8 +28,29 @@ export interface ElectronIpcTransportOptions {
   closeEventChannel?: string
 }
 
+/**
+ * 接收数据回调类型。
+ * @example
+ * ```ts
+ * const onData: DataCallback = (data) => console.log(data.length)
+ * ```
+ */
 export type DataCallback = (data: Uint8Array) => void
+/**
+ * 关闭回调类型。
+ * @example
+ * ```ts
+ * const onClose: CloseCallback = (err) => console.log(err?.message)
+ * ```
+ */
 export type CloseCallback = (err?: Error) => void
+/**
+ * 连接回调类型。
+ * @example
+ * ```ts
+ * const onConnect: ConnectCallback = () => console.log('connected')
+ * ```
+ */
 export type ConnectCallback = () => void
 
 function toUint8Array(payload: unknown): Uint8Array {
@@ -54,6 +83,16 @@ function toCloseError(payload: unknown): Error | undefined {
   return new ConnectionClosedError()
 }
 
+/**
+ * Electron IPC 传输实现。
+ *
+ * @example
+ * ```ts
+ * const transport = new ElectronIpcTransport({ ipc: bridge })
+ * await transport.connect()
+ * await transport.send(Uint8Array.from([1, 2, 3]))
+ * ```
+ */
 export class ElectronIpcTransport implements Transport {
   private dataCallbacks: DataCallback[] = []
   private closeCallbacks: CloseCallback[] = []

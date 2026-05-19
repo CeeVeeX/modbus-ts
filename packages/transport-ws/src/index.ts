@@ -1,15 +1,54 @@
 import { ConnectionClosedError, TransportError, type Transport } from '@modbus-ts/core'
 
+/**
+ * WebSocket 传输配置。
+ *
+ * @example
+ * ```ts
+ * const options: WsTransportOptions = { url: 'ws://127.0.0.1:18080' }
+ * ```
+ */
 export interface WsTransportOptions {
   url: string
   reconnectDelayMs?: number
   maxReconnectDelayMs?: number
 }
 
+/**
+ * 接收数据回调类型。
+ * @example
+ * ```ts
+ * const onData: DataCallback = (data) => console.log(data.length)
+ * ```
+ */
 export type DataCallback = (data: Uint8Array) => void
+/**
+ * 关闭回调类型。
+ * @example
+ * ```ts
+ * const onClose: CloseCallback = (err) => console.log(err?.message)
+ * ```
+ */
 export type CloseCallback = (err?: Error) => void
+/**
+ * 连接回调类型。
+ * @example
+ * ```ts
+ * const onConnect: ConnectCallback = () => console.log('connected')
+ * ```
+ */
 export type ConnectCallback = () => void
 
+/**
+ * 浏览器 WebSocket 传输实现。
+ *
+ * @example
+ * ```ts
+ * const transport = new WsTransport({ url: 'ws://127.0.0.1:18080' })
+ * await transport.connect()
+ * await transport.send(Uint8Array.from([0x00, 0x01]))
+ * ```
+ */
 export class WsTransport implements Transport {
   private ws: WebSocket | null = null
   private dataCallbacks: DataCallback[] = []
@@ -123,6 +162,7 @@ export class WsTransport implements Transport {
         this.receiveBuffer.byteLength,
       )
       const pduLength = view.getUint16(4)
+      // 这里按 Modbus TCP 的 MBAP 长度字段拆帧，保证粘包场景下逐帧回调。
       const frameLength = 6 + pduLength
       if (this.receiveBuffer.length < frameLength) {
         return

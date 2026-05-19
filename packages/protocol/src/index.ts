@@ -5,6 +5,13 @@ const ASCII_PREFIX = 0x3a // ':'
 const ASCII_CR = 0x0d
 const ASCII_LF = 0x0a
 
+/**
+ * 协议传输线模式。
+ * @example
+ * ```ts
+ * const mode: ModbusWireMode = 'ascii'
+ * ```
+ */
 export type ModbusWireMode = 'tcp' | 'rtu' | 'ascii'
 
 function ensureU16(value: number, field: string): void {
@@ -68,6 +75,7 @@ function decodePduFields(params: {
 }): ModbusResponse {
   const { unitId, functionCode, payload, transactionId } = params
 
+  // 异常响应约定：功能码最高位为 1，首字节是异常码。
   if ((functionCode & 0x80) !== 0) {
     if (payload.length < 1) {
       throw new ProtocolError('invalid exception payload')
@@ -266,6 +274,13 @@ function buildWriteMultipleCoilsPdu(params: {
   return pdu
 }
 
+/**
+ * 编码 FC1 读取线圈请求（TCP）。
+ * @example
+ * ```ts
+ * const frame = encodeReadCoils({ transactionId: 1, unitId: 1, startAddress: 0, quantity: 8 })
+ * ```
+ */
 export function encodeReadCoils(params: {
   transactionId: number
   unitId: number
@@ -282,6 +297,13 @@ export function encodeReadCoils(params: {
   return frame
 }
 
+/**
+ * 编码 FC2 读取离散输入请求（TCP）。
+ * @example
+ * ```ts
+ * const frame = encodeReadDiscreteInputs({ transactionId: 1, unitId: 1, startAddress: 0, quantity: 8 })
+ * ```
+ */
 export function encodeReadDiscreteInputs(params: {
   transactionId: number
   unitId: number
@@ -298,6 +320,13 @@ export function encodeReadDiscreteInputs(params: {
   return frame
 }
 
+/**
+ * 编码 FC1 读取线圈请求（RTU）。
+ * @example
+ * ```ts
+ * const frame = encodeReadCoilsRtu({ unitId: 1, startAddress: 0, quantity: 8 })
+ * ```
+ */
 export function encodeReadCoilsRtu(params: {
   unitId: number
   startAddress: number
@@ -307,6 +336,13 @@ export function encodeReadCoilsRtu(params: {
   return buildRtuAdu(params.unitId, pdu)
 }
 
+/**
+ * 编码 FC2 读取离散输入请求（RTU）。
+ * @example
+ * ```ts
+ * const frame = encodeReadDiscreteInputsRtu({ unitId: 1, startAddress: 0, quantity: 8 })
+ * ```
+ */
 export function encodeReadDiscreteInputsRtu(params: {
   unitId: number
   startAddress: number
@@ -316,6 +352,13 @@ export function encodeReadDiscreteInputsRtu(params: {
   return buildRtuAdu(params.unitId, pdu)
 }
 
+/**
+ * 编码 FC1 读取线圈请求（ASCII）。
+ * @example
+ * ```ts
+ * const frame = encodeReadCoilsAscii({ unitId: 1, startAddress: 0, quantity: 8 })
+ * ```
+ */
 export function encodeReadCoilsAscii(params: {
   unitId: number
   startAddress: number
@@ -325,6 +368,13 @@ export function encodeReadCoilsAscii(params: {
   return buildAsciiAdu(params.unitId, pdu)
 }
 
+/**
+ * 编码 FC2 读取离散输入请求（ASCII）。
+ * @example
+ * ```ts
+ * const frame = encodeReadDiscreteInputsAscii({ unitId: 1, startAddress: 0, quantity: 8 })
+ * ```
+ */
 export function encodeReadDiscreteInputsAscii(params: {
   unitId: number
   startAddress: number
@@ -339,6 +389,7 @@ function buildRtuAdu(unitId: number, pdu: Uint8Array): Uint8Array {
   const adu = new Uint8Array(1 + pdu.length + 2)
   adu[0] = unitId
   adu.set(pdu, 1)
+  // RTU CRC 仅覆盖 unitId + pdu，不包含末尾 CRC 自身字节。
   const crc = crc16Modbus(adu.subarray(0, adu.length - 2))
   adu[adu.length - 2] = crc & 0xff
   adu[adu.length - 1] = (crc >> 8) & 0xff
@@ -356,6 +407,13 @@ function buildAsciiAdu(unitId: number, pdu: Uint8Array): Uint8Array {
   return Uint8Array.from([...text].map((c) => c.charCodeAt(0)))
 }
 
+/**
+ * 编码 FC3/FC4 读取寄存器请求（TCP）。
+ * @example
+ * ```ts
+ * const frame = encodeReadHoldingRegisters({ transactionId: 1, unitId: 1, startAddress: 0, quantity: 2 })
+ * ```
+ */
 export function encodeReadHoldingRegisters(params: {
   transactionId: number
   unitId: number
@@ -373,6 +431,13 @@ export function encodeReadHoldingRegisters(params: {
   return frame
 }
 
+/**
+ * 编码 FC3/FC4 读取寄存器请求（RTU）。
+ * @example
+ * ```ts
+ * const frame = encodeReadHoldingRegistersRtu({ unitId: 1, startAddress: 0, quantity: 2 })
+ * ```
+ */
 export function encodeReadHoldingRegistersRtu(params: {
   unitId: number
   startAddress: number
@@ -383,6 +448,13 @@ export function encodeReadHoldingRegistersRtu(params: {
   return buildRtuAdu(params.unitId, pdu)
 }
 
+/**
+ * 编码 FC3/FC4 读取寄存器请求（ASCII）。
+ * @example
+ * ```ts
+ * const frame = encodeReadHoldingRegistersAscii({ unitId: 1, startAddress: 0, quantity: 2 })
+ * ```
+ */
 export function encodeReadHoldingRegistersAscii(params: {
   unitId: number
   startAddress: number
@@ -393,6 +465,13 @@ export function encodeReadHoldingRegistersAscii(params: {
   return buildAsciiAdu(params.unitId, pdu)
 }
 
+/**
+ * 编码 FC6 写单寄存器请求（TCP）。
+ * @example
+ * ```ts
+ * const frame = encodeWriteSingleRegister({ transactionId: 1, unitId: 1, address: 100, value: 123 })
+ * ```
+ */
 export function encodeWriteSingleRegister(params: {
   transactionId: number
   unitId: number
@@ -409,6 +488,13 @@ export function encodeWriteSingleRegister(params: {
   return frame
 }
 
+/**
+ * 编码 FC5 写单线圈请求（TCP）。
+ * @example
+ * ```ts
+ * const frame = encodeWriteSingleCoil({ transactionId: 1, unitId: 1, address: 10, value: true })
+ * ```
+ */
 export function encodeWriteSingleCoil(params: {
   transactionId: number
   unitId: number
@@ -425,6 +511,13 @@ export function encodeWriteSingleCoil(params: {
   return frame
 }
 
+/**
+ * 编码 FC5 写单线圈请求（RTU）。
+ * @example
+ * ```ts
+ * const frame = encodeWriteSingleCoilRtu({ unitId: 1, address: 10, value: true })
+ * ```
+ */
 export function encodeWriteSingleCoilRtu(params: {
   unitId: number
   address: number
@@ -433,6 +526,13 @@ export function encodeWriteSingleCoilRtu(params: {
   return buildRtuAdu(params.unitId, buildWriteSingleCoilPdu(params))
 }
 
+/**
+ * 编码 FC5 写单线圈请求（ASCII）。
+ * @example
+ * ```ts
+ * const frame = encodeWriteSingleCoilAscii({ unitId: 1, address: 10, value: true })
+ * ```
+ */
 export function encodeWriteSingleCoilAscii(params: {
   unitId: number
   address: number
@@ -441,6 +541,13 @@ export function encodeWriteSingleCoilAscii(params: {
   return buildAsciiAdu(params.unitId, buildWriteSingleCoilPdu(params))
 }
 
+/**
+ * 编码 FC6 写单寄存器请求（RTU）。
+ * @example
+ * ```ts
+ * const frame = encodeWriteSingleRegisterRtu({ unitId: 1, address: 100, value: 123 })
+ * ```
+ */
 export function encodeWriteSingleRegisterRtu(params: {
   unitId: number
   address: number
@@ -449,6 +556,13 @@ export function encodeWriteSingleRegisterRtu(params: {
   return buildRtuAdu(params.unitId, buildWriteSinglePdu(params))
 }
 
+/**
+ * 编码 FC6 写单寄存器请求（ASCII）。
+ * @example
+ * ```ts
+ * const frame = encodeWriteSingleRegisterAscii({ unitId: 1, address: 100, value: 123 })
+ * ```
+ */
 export function encodeWriteSingleRegisterAscii(params: {
   unitId: number
   address: number
@@ -457,6 +571,13 @@ export function encodeWriteSingleRegisterAscii(params: {
   return buildAsciiAdu(params.unitId, buildWriteSinglePdu(params))
 }
 
+/**
+ * 编码 FC16 连续写寄存器请求（TCP）。
+ * @example
+ * ```ts
+ * const frame = encodeWriteMultipleRegisters({ transactionId: 1, unitId: 1, startAddress: 0, values: [1, 2, 3] })
+ * ```
+ */
 export function encodeWriteMultipleRegisters(params: {
   transactionId: number
   unitId: number
@@ -473,6 +594,13 @@ export function encodeWriteMultipleRegisters(params: {
   return frame
 }
 
+/**
+ * 编码 FC15 连续写线圈请求（TCP）。
+ * @example
+ * ```ts
+ * const frame = encodeWriteMultipleCoils({ transactionId: 1, unitId: 1, startAddress: 0, values: [true, false] })
+ * ```
+ */
 export function encodeWriteMultipleCoils(params: {
   transactionId: number
   unitId: number
@@ -489,6 +617,13 @@ export function encodeWriteMultipleCoils(params: {
   return frame
 }
 
+/**
+ * 编码 FC15 连续写线圈请求（RTU）。
+ * @example
+ * ```ts
+ * const frame = encodeWriteMultipleCoilsRtu({ unitId: 1, startAddress: 0, values: [true, false] })
+ * ```
+ */
 export function encodeWriteMultipleCoilsRtu(params: {
   unitId: number
   startAddress: number
@@ -497,6 +632,13 @@ export function encodeWriteMultipleCoilsRtu(params: {
   return buildRtuAdu(params.unitId, buildWriteMultipleCoilsPdu(params))
 }
 
+/**
+ * 编码 FC15 连续写线圈请求（ASCII）。
+ * @example
+ * ```ts
+ * const frame = encodeWriteMultipleCoilsAscii({ unitId: 1, startAddress: 0, values: [true, false] })
+ * ```
+ */
 export function encodeWriteMultipleCoilsAscii(params: {
   unitId: number
   startAddress: number
@@ -505,6 +647,13 @@ export function encodeWriteMultipleCoilsAscii(params: {
   return buildAsciiAdu(params.unitId, buildWriteMultipleCoilsPdu(params))
 }
 
+/**
+ * 编码 FC16 连续写寄存器请求（RTU）。
+ * @example
+ * ```ts
+ * const frame = encodeWriteMultipleRegistersRtu({ unitId: 1, startAddress: 0, values: [1, 2, 3] })
+ * ```
+ */
 export function encodeWriteMultipleRegistersRtu(params: {
   unitId: number
   startAddress: number
@@ -513,6 +662,13 @@ export function encodeWriteMultipleRegistersRtu(params: {
   return buildRtuAdu(params.unitId, buildWriteMultiplePdu(params))
 }
 
+/**
+ * 编码 FC16 连续写寄存器请求（ASCII）。
+ * @example
+ * ```ts
+ * const frame = encodeWriteMultipleRegistersAscii({ unitId: 1, startAddress: 0, values: [1, 2, 3] })
+ * ```
+ */
 export function encodeWriteMultipleRegistersAscii(params: {
   unitId: number
   startAddress: number
@@ -521,6 +677,14 @@ export function encodeWriteMultipleRegistersAscii(params: {
   return buildAsciiAdu(params.unitId, buildWriteMultiplePdu(params))
 }
 
+/**
+ * 解码 Modbus TCP 响应帧。
+ * @example
+ * ```ts
+ * const res = decodeResponse(frame)
+ * if (res.success && 'registers' in res) console.log(res.registers)
+ * ```
+ */
 export function decodeResponse(frame: Uint8Array): ModbusResponse {
   if (frame.length < 8) {
     throw new ProtocolError('frame too short')
@@ -536,6 +700,7 @@ export function decodeResponse(frame: Uint8Array): ModbusResponse {
     throw new ProtocolError('invalid protocol id')
   }
 
+  // MBAP 的 length 字段从 unitId 开始计数，因此总帧长应为 length + 6。
   if (length + 6 !== frame.length) {
     throw new ProtocolError('invalid mbap length')
   }
@@ -549,6 +714,13 @@ export function decodeResponse(frame: Uint8Array): ModbusResponse {
   })
 }
 
+/**
+ * 解码 Modbus RTU 响应帧。
+ * @example
+ * ```ts
+ * const res = decodeResponseRtu(frame)
+ * ```
+ */
 export function decodeResponseRtu(frame: Uint8Array): ModbusResponse {
   if (frame.length < 5) {
     throw new ProtocolError('rtu frame too short')
@@ -571,6 +743,13 @@ export function decodeResponseRtu(frame: Uint8Array): ModbusResponse {
   })
 }
 
+/**
+ * 解码 Modbus ASCII 响应帧。
+ * @example
+ * ```ts
+ * const res = decodeResponseAscii(frame)
+ * ```
+ */
 export function decodeResponseAscii(frame: Uint8Array): ModbusResponse {
   if (frame.length < 9) {
     throw new ProtocolError('ascii frame too short')
@@ -611,6 +790,13 @@ export function decodeResponseAscii(frame: Uint8Array): ModbusResponse {
   })
 }
 
+/**
+ * 按模式分派响应解码。
+ * @example
+ * ```ts
+ * const res = decodeResponseByMode(frame, 'rtu')
+ * ```
+ */
 export function decodeResponseByMode(frame: Uint8Array, mode: ModbusWireMode): ModbusResponse {
   if (mode === 'rtu') {
     return decodeResponseRtu(frame)
@@ -621,6 +807,13 @@ export function decodeResponseByMode(frame: Uint8Array, mode: ModbusWireMode): M
   return decodeResponse(frame)
 }
 
+/**
+ * 按模式编码 FC3/FC4 读取寄存器请求。
+ * @example
+ * ```ts
+ * const frame = encodeReadHoldingRegistersByMode({ mode: 'tcp', transactionId: 1, unitId: 1, startAddress: 0, quantity: 2 })
+ * ```
+ */
 export function encodeReadHoldingRegistersByMode(params: {
   mode: ModbusWireMode
   transactionId: number
@@ -638,6 +831,13 @@ export function encodeReadHoldingRegistersByMode(params: {
   return encodeReadHoldingRegisters(params)
 }
 
+/**
+ * 按模式编码 FC1 读取线圈请求。
+ * @example
+ * ```ts
+ * const frame = encodeReadCoilsByMode({ mode: 'ascii', transactionId: 1, unitId: 1, startAddress: 0, quantity: 8 })
+ * ```
+ */
 export function encodeReadCoilsByMode(params: {
   mode: ModbusWireMode
   transactionId: number
@@ -654,6 +854,13 @@ export function encodeReadCoilsByMode(params: {
   return encodeReadCoils(params)
 }
 
+/**
+ * 按模式编码 FC2 读取离散输入请求。
+ * @example
+ * ```ts
+ * const frame = encodeReadDiscreteInputsByMode({ mode: 'rtu', transactionId: 1, unitId: 1, startAddress: 0, quantity: 8 })
+ * ```
+ */
 export function encodeReadDiscreteInputsByMode(params: {
   mode: ModbusWireMode
   transactionId: number
@@ -670,6 +877,13 @@ export function encodeReadDiscreteInputsByMode(params: {
   return encodeReadDiscreteInputs(params)
 }
 
+/**
+ * 按模式编码 FC6 写单寄存器请求。
+ * @example
+ * ```ts
+ * const frame = encodeWriteSingleRegisterByMode({ mode: 'tcp', transactionId: 1, unitId: 1, address: 100, value: 123 })
+ * ```
+ */
 export function encodeWriteSingleRegisterByMode(params: {
   mode: ModbusWireMode
   transactionId: number
@@ -686,6 +900,13 @@ export function encodeWriteSingleRegisterByMode(params: {
   return encodeWriteSingleRegister(params)
 }
 
+/**
+ * 按模式编码 FC5 写单线圈请求。
+ * @example
+ * ```ts
+ * const frame = encodeWriteSingleCoilByMode({ mode: 'tcp', transactionId: 1, unitId: 1, address: 10, value: true })
+ * ```
+ */
 export function encodeWriteSingleCoilByMode(params: {
   mode: ModbusWireMode
   transactionId: number
@@ -702,6 +923,13 @@ export function encodeWriteSingleCoilByMode(params: {
   return encodeWriteSingleCoil(params)
 }
 
+/**
+ * 按模式编码 FC16 连续写寄存器请求。
+ * @example
+ * ```ts
+ * const frame = encodeWriteMultipleRegistersByMode({ mode: 'rtu', transactionId: 1, unitId: 1, startAddress: 0, values: [1, 2] })
+ * ```
+ */
 export function encodeWriteMultipleRegistersByMode(params: {
   mode: ModbusWireMode
   transactionId: number
@@ -718,6 +946,13 @@ export function encodeWriteMultipleRegistersByMode(params: {
   return encodeWriteMultipleRegisters(params)
 }
 
+/**
+ * 按模式编码 FC15 连续写线圈请求。
+ * @example
+ * ```ts
+ * const frame = encodeWriteMultipleCoilsByMode({ mode: 'ascii', transactionId: 1, unitId: 1, startAddress: 0, values: [true, false] })
+ * ```
+ */
 export function encodeWriteMultipleCoilsByMode(params: {
   mode: ModbusWireMode
   transactionId: number
