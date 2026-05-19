@@ -15,14 +15,23 @@ pnpm add @modbus-ts/codec
 - decodeUint32 / decodeInt32
 - decodeFloat32 / decodeFloat64
 - encodeFloat32 / encodeFloat64
+- encodeAsciiString / decodeAsciiString
 
 ## Minimal Example
 
 ```ts
-import { decodeFloat32, encodeFloat32 } from '@modbus-ts/codec'
+import {
+  decodeAsciiString,
+  decodeFloat32,
+  encodeAsciiString,
+  encodeFloat32,
+} from '@modbus-ts/codec'
 
 const regs = encodeFloat32(12.5, { wordSwap: true })
 const value = decodeFloat32(regs, { wordSwap: true })
+
+const textRegs = encodeAsciiString('HELLO', { padByte: 0x20 })
+const text = decodeAsciiString(textRegs)
 ```
 
 ## Notes

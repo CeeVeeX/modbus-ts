@@ -3,6 +3,22 @@ export interface SwapOptions {
   wordSwap?: boolean
 }
 
+export interface AsciiStringEncodeOptions {
+  padByte?: number
+  asciiOnly?: boolean
+}
+
+export interface AsciiStringDecodeOptions {
+  asciiOnly?: boolean
+  trimTrailingNull?: boolean
+}
+
+function ensureByte(value: number, field: string): void {
+  if (!Number.isInteger(value) || value < 0 || value > 0xff) {
+    throw new RangeError(`${field} must be an integer in range 0..255`)
+  }
+}
+
 function applySwaps(bytes: Uint8Array, options: SwapOptions = {}): Uint8Array {
   const out = bytes.slice()
 
@@ -90,4 +106,61 @@ export function encodeFloat64(value: number, options?: SwapOptions): number[] {
   const view = new DataView(bytes.buffer)
   view.setFloat64(0, value)
   return toRegisters(applySwaps(bytes, options))
+}
+
+export function encodeAsciiString(value: string, options: AsciiStringEncodeOptions = {}): number[] {
+  const padByte = options.padByte ?? 0x00
+  const asciiOnly = options.asciiOnly ?? true
+  ensureByte(padByte, 'padByte')
+
+  const out = new Array<number>(Math.ceil(value.length / 2))
+  let offset = 0
+
+  for (let i = 0; i < value.length; i += 2) {
+    const hi = value.charCodeAt(i)
+    if (asciiOnly && hi > 0x7f) {
+      throw new RangeError(`non-ASCII character at index ${i}`)
+    }
+    ensureByte(hi, `charCodeAt(${i})`)
+
+    let lo = padByte
+    if (i + 1 < value.length) {
+      lo = value.charCodeAt(i + 1)
+      if (asciiOnly && lo > 0x7f) {
+        throw new RangeError(`non-ASCII character at index ${i + 1}`)
+      }
+      ensureByte(lo, `charCodeAt(${i + 1})`)
+    }
+
+    out[offset++] = (hi << 8) | lo
+  }
+
+  return out
+}
+
+export function decodeAsciiString(
+  registers: number[],
+  options: AsciiStringDecodeOptions = {},
+): string {
+  const asciiOnly = options.asciiOnly ?? true
+  const trimTrailingNull = options.trimTrailingNull ?? true
+  const bytes = fromRegisters(registers)
+
+  let end = bytes.length
+  if (trimTrailingNull) {
+    while (end > 0 && bytes[end - 1] === 0x00) {
+      end -= 1
+    }
+  }
+
+  let out = ''
+  for (let i = 0; i < end; i++) {
+    const byte = bytes[i]
+    if (asciiOnly && byte > 0x7f) {
+      throw new RangeError(`non-ASCII byte at index ${i}`)
+    }
+    out += String.fromCharCode(byte)
+  }
+
+  return out
 }

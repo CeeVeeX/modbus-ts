@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import {
+  decodeAsciiString,
   decodeFloat32,
   decodeFloat64,
   decodeInt16,
   decodeInt32,
   decodeUint16,
   decodeUint32,
+  encodeAsciiString,
   encodeFloat32,
   encodeFloat64,
 } from '../src/index'
@@ -45,5 +47,28 @@ describe('codec', () => {
 
     const swapped = encodeFloat64(9.25, { wordSwap: true })
     expect(decodeFloat64(swapped, { wordSwap: true })).toBeCloseTo(9.25, 8)
+  })
+
+  it('encodes ASCII string to holding registers', () => {
+    expect(encodeAsciiString('ABCD')).toEqual([0x4142, 0x4344])
+    expect(encodeAsciiString('ABC')).toEqual([0x4142, 0x4300])
+    expect(encodeAsciiString('ABC', { padByte: 0x20 })).toEqual([0x4142, 0x4320])
+  })
+
+  it('validates ASCII and byte range options', () => {
+    expect(() => encodeAsciiString('A中')).toThrow('non-ASCII character')
+    expect(() => encodeAsciiString('A中', { asciiOnly: false })).toThrow('range 0..255')
+    expect(() => encodeAsciiString('A', { padByte: 300 })).toThrow('range 0..255')
+  })
+
+  it('decodes ASCII registers with trailing null trim by default', () => {
+    expect(decodeAsciiString([0x4142, 0x4300])).toBe('ABC')
+    expect(decodeAsciiString([0x4142, 0x0000])).toBe('AB')
+  })
+
+  it('supports decode options', () => {
+    expect(decodeAsciiString([0x4142, 0x4300], { trimTrailingNull: false })).toBe('ABC\u0000')
+    expect(() => decodeAsciiString([0x41ff])).toThrow('non-ASCII byte')
+    expect(decodeAsciiString([0x41ff], { asciiOnly: false })).toBe('Aÿ')
   })
 })
