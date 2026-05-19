@@ -56,6 +56,9 @@ importers:
       '@modbus-ts/client':
         specifier: workspace:*
         version: link:../../packages/client
+      '@modbus-ts/codec':
+        specifier: workspace:*
+        version: link:../../packages/codec
       '@modbus-ts/gateway':
         specifier: workspace:*
         version: link:../../packages/gateway
@@ -87,6 +90,9 @@ importers:
       '@modbus-ts/client':
         specifier: workspace:*
         version: link:../../packages/client
+      '@modbus-ts/codec':
+        specifier: workspace:*
+        version: link:../../packages/codec
       '@modbus-ts/transport-tcp':
         specifier: workspace:*
         version: link:../../packages/transport-tcp
@@ -115,6 +121,9 @@ importers:
       '@modbus-ts/client':
         specifier: workspace:*
         version: link:../../packages/client
+      '@modbus-ts/codec':
+        specifier: workspace:*
+        version: link:../../packages/codec
       '@modbus-ts/transport-udp':
         specifier: workspace:*
         version: link:../../packages/transport-udp
