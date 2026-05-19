@@ -1,5 +1,6 @@
 import 'dotenv/config'
 import { ModbusClient } from '@modbus-ts/client'
+import { decodeAsciiString, encodeAsciiString } from '@modbus-ts/codec'
 import { TcpTransport } from '@modbus-ts/transport-tcp'
 
 async function main(): Promise<void> {
@@ -43,6 +44,14 @@ async function main(): Promise<void> {
 
   await client.writeMultipleCoils(2, [true, false, true, true])
   console.log('write multiple coils done')
+
+  const asciiStart = 100
+  const asciiText = 'HELLO'
+  const asciiRegs = encodeAsciiString(asciiText, { padByte: 0x20 })
+  await client.writeMultipleRegisters(asciiStart, asciiRegs)
+  const asciiReadRegs = await client.readHoldingRegisters(asciiStart, asciiRegs.length)
+  console.log('ascii write/read regs:', asciiReadRegs)
+  console.log('ascii decoded text:', decodeAsciiString(asciiReadRegs))
 
   const unsubscribe = client.subscribe({
     start: 0,

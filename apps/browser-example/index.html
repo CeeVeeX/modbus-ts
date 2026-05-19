@@ -1,18 +1,39 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Modbus Browser Gateway Demo</title>
+    <title>Modbus 浏览器网关示例</title>
   </head>
   <body>
-    <button id="connect">Connect</button>
-    <button id="read">Read</button>
-    <label for="write-value">Write Value:</label>
+    <button id="connect">连接</button>
+    <button id="read">读取</button>
+    <label for="write-value">写入数值：</label>
     <input id="write-value" type="number" value="123" min="0" max="65535" step="1" />
-    <button id="write">Write</button>
-    <button id="start-advanced">Start Advanced Subs</button>
-    <button id="stop-advanced" disabled>Stop Advanced Subs</button>
+    <button id="write">写入</button>
+    <button id="start-advanced">启动高级订阅</button>
+    <button id="stop-advanced" disabled>停止高级订阅</button>
+
+    <hr />
+    <h3>ASCII 寄存器示例</h3>
+    <label for="ascii-start">起始寄存器：</label>
+    <input id="ascii-start" type="number" value="100" min="0" max="65535" step="1" />
+    <label for="ascii-quantity">读取长度（寄存器）：</label>
+    <input id="ascii-quantity" type="number" value="6" min="1" max="123" step="1" />
+    <label for="ascii-pad">补位字节：</label>
+    <input id="ascii-pad" type="number" value="0" min="0" max="255" step="1" />
+    <br />
+    <label for="ascii-codes">ASCII 文本：</label>
+    <input
+      id="ascii-codes"
+      type="text"
+      value="HELLO"
+      style="width: 420px"
+      placeholder="例如：HELLO"
+    />
+    <button id="ascii-write">写入 ASCII 文本</button>
+    <button id="ascii-read">读取并解析 ASCII</button>
+
     <pre id="log"></pre>
     <script type="module" src="/src/main.ts"></script>
   </body>

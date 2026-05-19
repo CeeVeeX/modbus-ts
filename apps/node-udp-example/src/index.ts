@@ -1,4 +1,5 @@
 import { ModbusClient } from '@modbus-ts/client'
+import { decodeAsciiString, encodeAsciiString } from '@modbus-ts/codec'
 import { UdpTransport } from '@modbus-ts/transport-udp'
 
 type WireMode = 'rtu' | 'ascii'
@@ -70,6 +71,14 @@ async function main(): Promise<void> {
 
   await client.writeMultipleCoils(12, [true, false, true])
   console.log('[udp-example] write multiple coils done')
+
+  const asciiStart = 100
+  const asciiText = 'HELLO'
+  const asciiRegs = encodeAsciiString(asciiText, { padByte: 0x20 })
+  await client.writeMultipleRegisters(asciiStart, asciiRegs)
+  const asciiReadRegs = await client.readHoldingRegisters(asciiStart, asciiRegs.length)
+  console.log('[udp-example] ascii write/read regs:', asciiReadRegs)
+  console.log('[udp-example] ascii decoded text:', decodeAsciiString(asciiReadRegs))
 
   const unsubscribe = client.subscribe({
     start: 0,

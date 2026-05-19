@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@modbus-ts/client": "workspace:*",
+    "@modbus-ts/codec": "workspace:*",
     "@modbus-ts/gateway": "workspace:*",
     "@modbus-ts/transport-ws": "workspace:*",
     "dotenv": "^17.2.3"
