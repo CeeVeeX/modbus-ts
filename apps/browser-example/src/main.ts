@@ -207,6 +207,7 @@ stopAdvancedBtn.onclick = () => {
 asciiWriteBtn.onclick = async () => {
   try {
     const start = parseU16(asciiStartInput.value)
+    const quantity = Number.parseInt(asciiQuantityInput.value, 10)
     const padByte = Number.parseInt(asciiPadInput.value, 10)
     if (!Number.isInteger(padByte) || padByte < 0 || padByte > 255) {
       log('ASCII 写入失败：补位字节无效，应为 0-255')
@@ -214,17 +215,9 @@ asciiWriteBtn.onclick = async () => {
     }
 
     const { text: asciiText, asciiCodes } = parseAsciiTextInput(asciiCodesInput.value)
-    const registers = encodeAsciiString(asciiText, { padByte })
+    const registers = encodeAsciiString(asciiText, { padByte, length: quantity, truncate: true })
 
-    // FC16 单次最多写 123 个寄存器，长文本需要自动分包写入。
-    const maxRegistersPerRequest = 123
-    for (let i = 0; i < registers.length; i += maxRegistersPerRequest) {
-      await client.writeMultipleRegisters(
-        start + i,
-        registers.slice(i, i + maxRegistersPerRequest),
-        { priority: 100 },
-      )
-    }
+    await client.writeMultipleRegisters(start, registers, { priority: 100 })
 
     log(
       `ASCII 写入：start=${start} codes=[${asciiCodes.join(',')}] text="${asciiText}" regs=${JSON.stringify(registers)}`,
