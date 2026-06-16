@@ -22,6 +22,35 @@ export interface SwapOptions {
 export interface AsciiStringEncodeOptions {
   padByte?: number
   asciiOnly?: boolean
+  /**
+   * 固定输出的寄存器数量。如果字符串占用的寄存器少于该值，剩余寄存器用 padByte 填充。
+   * 如果未设置或小于实际需要的寄存器数，则按实际需要返回（除非启用 truncate）。
+   *
+   * @example
+   * ```ts
+   * // "TEXT" 占用 2 个寄存器，但指定长度为 10，返回 10 个寄存器（后 8 个为 0）
+   * encodeAsciiString('TEXT', { length: 10 })
+   * // 返回: [0x5445, 0x5854, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000]
+   * ```
+   */
+  length?: number
+  /**
+   * 当字符串长度超过指定的 length 时，是否截断字符串。
+   * - false（默认）：忽略 length 限制，返回完整字符串
+   * - true：截断字符串以适配 length 限制
+   *
+   * @example
+   * ```ts
+   * // 不截断（默认行为）
+   * encodeAsciiString('ABCDEFGHIJ', { length: 3 })
+   * // 返回: [0x4142, 0x4344, 0x4546, 0x4748, 0x494a] (5 个寄存器)
+   *
+   * // 截断模式
+   * encodeAsciiString('ABCDEFGHIJ', { length: 3, truncate: true })
+   * // 返回: [0x4142, 0x4344, 0x4546] (只保留前 6 个字符 'ABCDEF')
+   * ```
+   */
+  truncate?: boolean
 }
 
 /**
@@ -205,26 +234,53 @@ export function encodeFloat64(value: number, options?: SwapOptions): number[] {
  * @example
  * ```ts
  * encodeAsciiString('HELLO', { padByte: 0x20 })
+ * encodeAsciiString('TEXT', { length: 10 }) // 固定 10 个寄存器，未使用的填充 0
+ * encodeAsciiString('ABCDEFGHIJ', { length: 3, truncate: true }) // 截断为前 6 个字符
  * ```
  */
 export function encodeAsciiString(value: string, options: AsciiStringEncodeOptions = {}): number[] {
   const padByte = options.padByte ?? 0x00
   const asciiOnly = options.asciiOnly ?? true
+  const fixedLength = options.length
+  const truncate = options.truncate ?? false
   ensureByte(padByte, 'padByte')
 
-  const out = new Array<number>(Math.ceil(value.length / 2))
+  // 计算实际需要的寄存器数量
+  const requiredLength = Math.ceil(value.length / 2)
+
+  // 确定最终输出的寄存器数量
+  let outputLength: number
+  let truncatedValue: string = value
+
+  if (fixedLength !== undefined) {
+    if (truncate && requiredLength > fixedLength) {
+      // 截断模式：限制输出长度并截断字符串
+      outputLength = fixedLength
+      const maxChars = fixedLength * 2
+      truncatedValue = value.substring(0, maxChars)
+    } else {
+      // 默认模式：自动扩展以容纳完整字符串
+      outputLength = Math.max(fixedLength, requiredLength)
+    }
+  } else {
+    // 未指定 length，按实际需要返回
+    outputLength = requiredLength
+  }
+
+  const out = new Array<number>(outputLength)
   let offset = 0
 
-  for (let i = 0; i < value.length; i += 2) {
-    const hi = value.charCodeAt(i)
+  // 编码字符串字符到寄存器
+  for (let i = 0; i < truncatedValue.length; i += 2) {
+    const hi = truncatedValue.charCodeAt(i)
     if (asciiOnly && hi > 0x7f) {
       throw new RangeError(`non-ASCII character at index ${i}`)
     }
     ensureByte(hi, `charCodeAt(${i})`)
 
     let lo = padByte
-    if (i + 1 < value.length) {
-      lo = value.charCodeAt(i + 1)
+    if (i + 1 < truncatedValue.length) {
+      lo = truncatedValue.charCodeAt(i + 1)
       if (asciiOnly && lo > 0x7f) {
         throw new RangeError(`non-ASCII character at index ${i + 1}`)
       }
@@ -232,6 +288,11 @@ export function encodeAsciiString(value: string, options: AsciiStringEncodeOptio
     }
 
     out[offset++] = (hi << 8) | lo
+  }
+
+  // 如果指定了固定长度，用 padByte 填充剩余寄存器
+  while (offset < outputLength) {
+    out[offset++] = (padByte << 8) | padByte
   }
 
   return out
