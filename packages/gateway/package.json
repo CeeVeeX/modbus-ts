@@ -1,6 +1,6 @@
 {
   "name": "@modbus-ts/gateway",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "description": "The gateway package for modbus-ts.",
   "author": "Cee Vee X <ceeveex@hotmail.com>",

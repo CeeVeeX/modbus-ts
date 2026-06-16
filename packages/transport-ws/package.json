@@ -1,6 +1,6 @@
 {
   "name": "@modbus-ts/transport-ws",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "description": "The transport-ws package for modbus-ts.",
   "author": "Cee Vee X <ceeveex@hotmail.com>",
